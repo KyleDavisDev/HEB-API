@@ -17,6 +17,13 @@ router.get("/", async (req: Request, res: Response) => {
  */
 router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
+
+  const imageId = parseInt(id, 10);
+  if (isNaN(imageId)) {
+    res.status(301).send("oops!");
+    return;
+  }
+
   res.send("good job" + id);
 });
 
