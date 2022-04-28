@@ -1,3 +1,3 @@
 export interface Context {
-  queryAsync: (sql: string, args: string) => Promise<any>;
+  queryAsync: (sql: string, args: any) => Promise<any>;
 }
