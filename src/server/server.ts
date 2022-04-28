@@ -12,5 +12,6 @@ server.get("/", async (req: Request, res: Response) => {
 
 server.use("/images", imageRouter);
 
-// grab port from .env file
-server.listen(process.env.DEFAULT_PORT);
+// grab port from .env file or assign default
+const port: number = parseInt(<string>process.env.DEFAULT_PORT, 10) || 8080;
+server.listen(port);
