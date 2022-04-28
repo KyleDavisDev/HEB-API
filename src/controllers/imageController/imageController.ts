@@ -1,11 +1,19 @@
 "use strict";
 
 import { Context } from "../../Classes/Context/Context";
+import { SqlContext } from "../../Classes/Context/SqlContext";
 import { Image } from "../../Models/Image";
 
+interface getByIdAsyncParams {
+  db?: Context;
+  id: number;
+}
+
 export const imageRepository = {
-  getByIdAsync: async ({ db, id }: { db: Context; id: number }) => {
+  getByIdAsync: async (params: getByIdAsyncParams): Promise<Image | null> => {
+    let { id, db } = params;
     if (id < 1) return null;
+    if (!db) db = SqlContext;
 
     const query = `SELECT * FROM Images
                    JOIN ImageTypes ON Images.Types = ImageTypes.Id
