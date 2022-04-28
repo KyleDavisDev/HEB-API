@@ -42,6 +42,7 @@ class SqlContext implements Context {
       connectTimeout: 60 * 60 * 1000,
       acquireTimeout: 60 * 60 * 1000,
       timeout: 60 * 60 * 1000,
+      multipleStatements: true,
     });
   }
 
@@ -86,5 +87,5 @@ class SqlContext implements Context {
     });
   };
 }
-
-module.exports = SqlContext.getInstance();
+const temp = SqlContext.getInstance();
+export { temp as SqlContext };
