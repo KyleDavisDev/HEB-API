@@ -3,7 +3,7 @@ require("dotenv").config({ path: "variables.env" });
 
 describe("/images", () => {
   jest.setTimeout(10000);
-  const port = process.env.DEFAULT_PORT;
+  const port = parseInt(<string>process.env.DEFAULT_PORT, 10) || 8080;
   const basePath = `http://localhost:${port}/images`;
 
   it("should return 200 status", async () => {
@@ -17,29 +17,44 @@ describe("/images", () => {
     expect(result.status).toEqual(200);
   });
 
-  it("/:id should accept id as a query parameter 200 status", async () => {
+  // it("/:id should accept id as a query parameter 200 status", async () => {
+  //   //Given
+  //   const id = 5;
+  //   const status = 200;
+  //
+  //   //When
+  //   const result = await axios.get(`${basePath}/${id}`);
+  //
+  //   //Then
+  //   expect(result.status).toEqual(status);
+  // });
+
+  it("/:id should return 301 if id is not a positive numeric value", async () => {
     //Given
-    const id = 5;
-    const status = 200;
-
-    //When
-    const result = await axios.get(`${basePath}/${id}`);
-
-    //Then
-    expect(result.status).toEqual(status);
-  });
-
-  it("/:id should return 301 if id is not a number-able", async () => {
-    //Given
-    const id = "test";
+    const invalidIds = [
+      "a",
+      "b",
+      "abc",
+      "test",
+      ["abc", "123"],
+      [1, 2, 3],
+      0,
+      -1,
+      3.1415,
+      Math.PI,
+    ];
     const status = 301;
 
-    //When
-    const result = await axios
-      .get(`${basePath}/${id}`)
-      .catch((x) => x.response);
+    for (let i = 0; i < invalidIds.length; i++) {
+      const id = invalidIds[i];
 
-    //Then
-    expect(result.status).toEqual(status);
+      //When
+      const result = await axios
+        .get(`${basePath}/${id}`)
+        .catch((x) => x.response);
+
+      //Then
+      expect(result.status).toEqual(status);
+    }
   });
 });
