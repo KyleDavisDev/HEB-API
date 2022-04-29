@@ -12,6 +12,10 @@ interface getByIdAsyncParams {
   id: number;
 }
 
+interface getAllAsyncParams {
+  db?: Context;
+}
+
 export const imageRepository = {
   getByIdAsync: async (params: getByIdAsyncParams): Promise<Image | null> => {
     let { id, db } = params;
@@ -57,5 +61,21 @@ export const imageRepository = {
     };
 
     return image;
+  },
+
+  getAllAsync: async (params: getAllAsyncParams): Promise<Image[]> => {
+    let { db } = params;
+    if (!db) db = SqlContext; // default context
+
+    const query = `SELECT * FROM Images
+                   JOIN ImageTypes ON Images.TypeID = ImageTypes.Id
+                   WHERE Images.IsActive = 1 AND ImageTypes.IsActive = 1;
+                   SELECT * FROM ImageMetadata WHERE IsActive = 1;
+                   SELECT * FROM ImageObjects WHERE IsActive = 1;`;
+
+    const results = await db.queryAsync(query);
+    if (!results) return Promise.resolve([]);
+
+    return Promise.resolve([]);
   },
 };

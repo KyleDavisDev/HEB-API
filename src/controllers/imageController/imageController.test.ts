@@ -67,4 +67,18 @@ describe("ImageRepository", () => {
       expect(result).toStrictEqual(moqImage);
     });
   });
+
+  describe("getAll", () => {
+    it("should return empty set when no images are found", async () => {
+      // Given
+      const db: Context = createMock<Context>();
+      const sut = imageRepository;
+
+      // When
+      const images = await imageRepository.getAllAsync({ db });
+
+      // Then
+      expect(images).toEqual([]);
+    });
+  });
 });
