@@ -1,14 +1,15 @@
 import { ImageTypes } from "./ImageTypes";
 import { ImageObjects } from "./ImageObjects";
+import { ImageMetadata } from "./ImageMetadata";
 
 export interface Image {
   Id: number;
   Label: string;
   Path: string;
-  Type: ImageTypes;
-  CreateDate: bigint;
+  CreateDate: number;
   IsActive: boolean;
 
-  Attributes: ImageTypes[];
+  Type: ImageTypes;
   Objects: ImageObjects[];
+  Metadata: ImageMetadata[];
 }

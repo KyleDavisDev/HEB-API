@@ -3,6 +3,6 @@ export interface ImageMetadata {
   ImageId: number;
   Name: string;
   Value: string;
-  CreateDate: bigint;
+  CreateDate: number;
   IsActive: boolean;
 }
