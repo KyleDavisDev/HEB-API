@@ -13,25 +13,23 @@ class SqlContext implements Context {
   }
 
   private setPool() {
-    const NODE_ENV = process.env.NODE_ENV;
     let host, user, password, database;
     let port: number;
 
-    if (NODE_ENV === "prod") {
+    if (process.env.NODE_ENV === "prod") {
       host = process.env.DB_HOST_PROD;
-      // port = process.env.DB_PORT_PROD;
-      port = 12;
+      port = parseInt(<string>process.env.DB_PORT_PROD, 10);
       user = process.env.DB_USER_PROD;
       password = process.env.DB_PASS_PROD;
       database = process.env.DB_DATABASE_PROD;
     } else {
       host = process.env.DB_HOST_DEV;
-      // port = process.env.DB_PORT_DEV;
-      port = 12;
+      port = parseInt(<string>process.env.DB_PORT_DEV, 10);
       user = process.env.DB_USER_DEV;
       password = process.env.DB_PASS_DEV;
       database = process.env.DB_DATABASE_DEV;
     }
+
     this._pool = mysql.createPool({
       host,
       port,
