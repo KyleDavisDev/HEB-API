@@ -1,5 +1,5 @@
 import { createMock } from "ts-auto-mock";
-import { imageRepository } from "./imageController";
+import { imageRepository } from "./imageRepository";
 import { Context } from "../../Classes/Context/Context";
 import { ImageTypes } from "../../Models/ImageTypes";
 import { ImageMetadata } from "../../Models/ImageMetadata";
