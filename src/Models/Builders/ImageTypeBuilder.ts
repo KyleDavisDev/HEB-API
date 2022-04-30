@@ -13,7 +13,7 @@ class ImageTypeBuilder {
     this._random = seedrandom(this._seed.toString(10));
   }
 
-  Builder = () => {
+  Build = () => {
     return this._imageType;
   };
 
@@ -31,4 +31,19 @@ class ImageTypeBuilder {
 
     return this;
   };
+
+  // Specialized method for testing DB calls
+  AnImageFromDB = () => {
+    //  update values on each call
+    this.Random();
+
+    return {
+      "ImageTypes.CreateDate": this._imageType.CreateDate,
+      "ImageTypes.Id": this._imageType.Id,
+      "ImageTypes.IsActive": this._imageType.IsActive,
+      "ImageTypes.Value": this._imageType.Value,
+    };
+  };
 }
+
+export { ImageTypeBuilder };
