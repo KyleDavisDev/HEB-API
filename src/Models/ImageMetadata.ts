@@ -6,3 +6,13 @@ export interface ImageMetadata {
   CreateDate: number;
   IsActive: boolean;
 }
+
+const ImageMetadataModel: ImageMetadata = {
+  CreateDate: 0,
+  Id: 0,
+  ImageId: 0,
+  IsActive: false,
+  Name: "",
+  Value: "",
+};
+export { ImageMetadataModel };
