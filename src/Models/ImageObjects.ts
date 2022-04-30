@@ -15,3 +15,5 @@ const ImageObjectModel: ImageObjects = {
   Name: "",
   ImageId: 0,
 };
+
+export { ImageObjectModel };
