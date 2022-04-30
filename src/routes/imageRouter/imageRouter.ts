@@ -1,5 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import { param, validationResult } from "express-validator";
+import { Image } from "../../Models/Image";
+import { imageRepository } from "../../repositories/imageRepository/imageRepository";
 
 const router = express.Router();
 
@@ -8,7 +10,10 @@ const router = express.Router();
  *  @return JSON of image metadata
  */
 router.get("/", async (req: Request, res: Response) => {
-  res.status(200).send("success!");
+  return res.status(200).send("you did it!");
+  const images: Image[] = await imageRepository.getAllAsync({});
+
+  return res.status(200).send(images);
 });
 
 /** @route GET /images/:id
@@ -26,10 +31,12 @@ router.get(
     }
 
     const { id } = req.params;
-    const imageId = parseInt(id, 10);
-    console.log(imageId);
+    const imageId: number = parseInt(id, 10);
 
-    res.send("good job" + id);
+    const image = await imageRepository.getByIdAsync({ id: imageId });
+    console.log(image);
+
+    return res.send("good job" + id);
   }
 );
 
