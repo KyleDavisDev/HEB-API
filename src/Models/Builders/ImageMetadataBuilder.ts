@@ -3,7 +3,6 @@ import { ImageMetadata, ImageMetadataModel } from "../ImageMetadata";
 
 class ImageMetadataBuilder {
   private _imageMetadata: ImageMetadata;
-
   private _seed: number;
   private _random: seedrandom.PRNG;
 
