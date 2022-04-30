@@ -32,7 +32,7 @@ export const imageRepository = {
                    SELECT Id, ImageId, Name, Value,	CreateDate,	IsActive  FROM ImageMetadata WHERE ImageId = ? AND IsActive = 1;
                    SELECT Id, ImageId, Name, Confidence, CreateDate, IsActive FROM ImageObjects WHERE ImageId = ? AND IsActive = 1;`;
 
-    const results = await db.queryAsync(query, [id]).catch((x) => x);
+    const results = await db.queryAsync(query, [id, id, id]).catch((x) => x);
     if (!results) return null;
 
     // Piecing it all together!
