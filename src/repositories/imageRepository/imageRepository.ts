@@ -7,16 +7,21 @@ import { ImageMetadata } from "../../Models/ImageMetadata";
 import { ImageObjects } from "../../Models/ImageObjects";
 import { ImageTypes } from "../../Models/ImageTypes";
 
-interface getByIdAsyncParams {
+export interface getByIdAsyncParams {
   db?: Context;
   id: number;
 }
 
-interface getAllAsyncParams {
+export interface getAllAsyncParams {
   db?: Context;
 }
 
-export const imageRepository = {
+export interface imageRepository {
+  getByIdAsync: (params: getByIdAsyncParams) => Promise<Image | null>;
+  getAllAsync: (params: getAllAsyncParams) => Promise<Image[]>;
+}
+
+const imageRepositoryImpl: imageRepository = {
   getByIdAsync: async (params: getByIdAsyncParams): Promise<Image | null> => {
     let { id, db } = params;
     if (id < 1) return null;
@@ -68,6 +73,7 @@ export const imageRepository = {
   },
 
   getAllAsync: async (params: getAllAsyncParams): Promise<Image[]> => {
+    console.log("INside of the ALL123");
     let { db } = params;
     if (!db) db = SqlContext; // default context
 
@@ -136,3 +142,5 @@ export const imageRepository = {
     return Promise.resolve(images);
   },
 };
+
+export { imageRepositoryImpl };
