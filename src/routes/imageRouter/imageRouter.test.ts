@@ -1,15 +1,11 @@
-import { serverSetup } from "../../serverSetup/serverSetup";
 import supertest, { SuperAgentTest } from "supertest";
-import {
-  getAllAsyncParams,
-  getByIdAsyncParams,
-  imageRepository,
-} from "../../repositories/imageRepository/imageRepository";
+import { imageRepository } from "../../repositories/imageRepository/imageRepository";
 import { Image } from "../../Models/Image";
 import { ImageBuilder } from "../../Models/Builders/ImageBuilder";
+import { serverSetup } from "../../serverSetup/serverSetup";
 
 describe("/images", () => {
-  jest.setTimeout(10000); // increase timeout
+  jest.setTimeout(40000); // increase timeout
   const basePath = `/`;
   const route = "images";
   let request: SuperAgentTest;
@@ -25,7 +21,7 @@ describe("/images", () => {
       getAllAsync: () => getAllAsyncMock,
       getByIdAsync: () => getByIdAsyncMock,
       addAsync: () => addAsyncMock,
-      saveImageAsync: () => saveImageAsyncMock,
+      uploadImageAsync: () => saveImageAsyncMock,
     };
     const app = serverSetup({ imageRepository: imageRepositoryImpl });
     request = supertest.agent(app);
@@ -175,7 +171,7 @@ describe("/images", () => {
       const status = 301;
       const image =
         "https://kyledavisdev.com/_next/image?url=%2Fstatic%2Fprofile-pic.jpg&w=256&q=75";
-      const invalidLabels = [1, -5, { key: "value" }];
+      const invalidLabels = [1, -5, { key: "value" }, "#".repeat(151)];
 
       for (let i = 0; i < invalidLabels.length; i++) {
         const label = invalidLabels[i];
@@ -194,7 +190,7 @@ describe("/images", () => {
       // Given
       const status = 301;
       const imageLink =
-        "https://kyledavisdev.com/_next/image?url=%2Fstatic%2Fprofile-pic.jpg&w=256&q=75";
+        "https://res.cloudinary.com/foryourthoughts/image/upload/q_auto,w_434,h_651/v1635714597/sauces/itre15r8ste8ecidi3t4.jpg";
       const label = "test label";
 
       //When
