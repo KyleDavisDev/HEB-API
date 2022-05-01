@@ -15,15 +15,15 @@ describe("/images", () => {
   let request: SuperAgentTest;
   const nullPromise = Promise.resolve(null);
   let getByIdAsyncMock: Promise<Image | null> = nullPromise;
+  let addAsyncMock: Promise<Image | null> = nullPromise;
   const emptyArrPromise = Promise.resolve([]);
   let getAllAsyncMock: Promise<Image[]> = emptyArrPromise;
 
   beforeAll(() => {
     const imageRepositoryImpl: imageRepository = {
-      getAllAsync: () => {
-        return Promise.resolve([]);
-      },
+      getAllAsync: () => getAllAsyncMock,
       getByIdAsync: () => getByIdAsyncMock,
+      addAsync: () => addAsyncMock,
     };
     const app = serverSetup({ imageRepository: imageRepositoryImpl });
     request = supertest.agent(app);
@@ -32,6 +32,7 @@ describe("/images", () => {
   afterEach(() => {
     // reset back to default after each
     getByIdAsyncMock = nullPromise;
+    addAsyncMock = nullPromise;
     getAllAsyncMock = emptyArrPromise;
   });
 
