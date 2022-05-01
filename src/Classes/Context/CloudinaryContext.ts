@@ -43,4 +43,4 @@ class CloudinaryContext implements Context {
 }
 
 const temp = CloudinaryContext.getInstance();
-export { temp as FileContext };
+export { temp as CloudinaryContext };
