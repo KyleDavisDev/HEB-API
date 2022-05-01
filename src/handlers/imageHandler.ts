@@ -1,8 +1,12 @@
 import { Request, Response } from "express";
-import { Image } from "../Models/Image";
+import axios from "axios";
+import sharp from "sharp";
+import { Image, ImageModel } from "../Models/Image";
 import { imageRepository } from "../repositories/imageRepository/imageRepository";
 import { validationResult } from "express-validator";
-import axios from "axios";
+import { ImageMetadata, ImageMetadataModel } from "../Models/ImageMetadata";
+import { ImageTypeModel } from "../Models/ImageTypes";
+import { ImageObjectModel, ImageObjects } from "../Models/ImageObjects";
 
 const imageHandler = {
   getAll: (imageRepo: imageRepository) => {
@@ -45,11 +49,45 @@ const imageHandler = {
         ? await imageHandler.downloadImage(image)
         : image;
 
-      const path = await imageRepo.saveImageAsync({ imageB64: imageB64 });
+      // 1) get the metadata of the image
+      const metaData = await imageHandler.getImageMetadata(imageB64);
+      const typeOfImage = metaData.find((x) => x.Name === "format")?.Value;
+      if (!typeOfImage) {
+        return res
+          .status(400)
+          .send({ msg: "unable to determine what type of image this is." });
+      }
 
-      // const saveImage = await imageRepo.addAsync({ image });
+      // 2) Get the objects of the image
+      const objects = await imageHandler.getImageObjects(imageB64);
+      if (objects.length === 0) {
+        return res.status(400).send({
+          msg: "unable to determine what objects are inside of this image.",
+        });
+      }
 
-      return res.status(200).send(image);
+      // 3) save image return the path
+      const path = await imageRepo.uploadImageAsync({ imageBuffer: imageB64 });
+      if (!path) {
+        return res.status(400).send({ msg: "error saving the image" });
+      }
+
+      // construct object to save to DB!
+      const imageType = { ...ImageTypeModel };
+      imageType.Value = typeOfImage;
+
+      const imageObj = { ...ImageModel };
+      imageObj.Type = imageType;
+      imageObj.Path = path;
+      imageObj.Objects = objects;
+      imageObj.Metadata = metaData;
+      imageObj.Label = label;
+
+      const savedImage: Image | null = await imageRepo.addAsync({
+        image: imageObj,
+      });
+
+      return res.status(200).send(savedImage);
     };
   },
 
@@ -69,7 +107,74 @@ const imageHandler = {
     const imageBuffer = await axios.get(url, { responseType: "arraybuffer" });
     const imageB64: string = Buffer.from(imageBuffer.data).toString("base64");
 
-    return imageB64;
+    return "data:image/jpeg;base64," + imageB64;
+  },
+
+  getImageMetadata: async (imageB64: string): Promise<ImageMetadata[]> => {
+    // Quick sanity check -- sharp package expects param in very specific fashion
+    if (imageB64.includes("data:image/jpeg;base64,")) {
+      imageB64 = imageB64.replace("data:image/jpeg;base64,", "");
+    }
+
+    const imageBuffer: Buffer = Buffer.from(imageB64, "base64");
+    const metadata: sharp.Metadata = await sharp(imageBuffer).metadata();
+
+    const imageMetadata: ImageMetadata[] = [];
+    for (const [key, val] of Object.entries(metadata)) {
+      if (
+        typeof val === "number" ||
+        typeof val === "string" ||
+        typeof val === "boolean"
+      ) {
+        const data = { ...ImageMetadataModel };
+        data.Name = key;
+        data.Value = val.toString();
+        imageMetadata.push(data);
+      }
+    }
+
+    return Promise.resolve(imageMetadata);
+  },
+
+  getImageObjects: async (imageB64: string): Promise<ImageObjects[]> => {
+    const imageObjects: ImageObjects[] = [];
+
+    try {
+      const authorization = `Basic ${process.env.IMAGGA_AUTHORIZATION}`;
+      const responseUpload = await axios.post(
+        "https://api.imagga.com/v2/uploads",
+        { image: imageB64, image_base64: imageB64 },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: authorization,
+          },
+        }
+      );
+
+      const uploadID = responseUpload.data.result.upload_id;
+
+      const responseTags = await axios.get(
+        `https://api.imagga.com/v2/tags/?image_upload_id=${uploadID}`,
+        {
+          headers: {
+            Authorization: authorization,
+          },
+        }
+      );
+
+      responseTags.data.result.tags.forEach((tag: any) => {
+        const imageObj = { ...ImageObjectModel };
+        imageObj.Name = tag.tag.en;
+        imageObj.Confidence = tag.confidence;
+
+        imageObjects.push(imageObj);
+      });
+    } catch (error: any) {
+      return Promise.resolve(imageObjects);
+    }
+
+    return Promise.resolve(imageObjects);
   },
 };
 
