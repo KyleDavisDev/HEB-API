@@ -129,4 +129,26 @@ describe("ImageRepository", () => {
       expect(images[0].Path).not.toBeNull();
     });
   });
+
+  describe("add", () => {
+    it("should return false on save error", async () => {
+      // Given
+      const image = _imageBuilder.AFullRandomImage().Build();
+      const db: Context = createMock<Context>({
+        queryAsync: () => Promise.resolve(null),
+      });
+
+      const sut = imageRepositoryImpl;
+
+      // When
+      const images = await sut.addAsync({ db, image });
+
+      // Then
+      expect(images).toEqual(null);
+
+      // When
+
+      // Then
+    });
+  });
 });
