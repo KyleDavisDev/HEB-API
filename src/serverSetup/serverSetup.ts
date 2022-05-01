@@ -1,8 +1,6 @@
 import express, { Request, Response } from "express";
 import { imageRouter } from "../routes/imageRouter/imageRouter";
 import { imageRepository } from "../repositories/imageRepository/imageRepository";
-import { imageHandler } from "../handlers/imageHandler";
-import { param } from "express-validator";
 
 interface serverParams {
   imageRepository: imageRepository;
