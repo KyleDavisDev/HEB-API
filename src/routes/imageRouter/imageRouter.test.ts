@@ -189,5 +189,22 @@ describe("/images", () => {
         expect(result.statusCode).toEqual(status);
       }
     });
+
+    it("should return complete image on success", async () => {
+      // Given
+      const status = 301;
+      const imageLink =
+        "https://kyledavisdev.com/_next/image?url=%2Fstatic%2Fprofile-pic.jpg&w=256&q=75";
+      const label = "test label";
+
+      //When
+      const result = await request
+        .post(`${basePath}${route}`)
+        .send({ image: imageLink, label })
+        .set("Accept", "application/json");
+
+      //Then
+      expect(result.statusCode).toEqual(status);
+    });
   });
 });
