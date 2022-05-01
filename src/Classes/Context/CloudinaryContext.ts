@@ -26,19 +26,15 @@ class CloudinaryContext implements Context {
     return Promise.resolve(undefined);
   }
 
-  saveImageAsync = async (image: string): Promise<string | null> => {
-    console.log("I MADE IT TO THE REPO");
-
+  uploadImageAsync = async (imageBuffer: string): Promise<string | null> => {
     // Upload image
-    const img = await cloudinary.uploader.upload(image, {
+    const img = await cloudinary.uploader.upload(imageBuffer, {
       folder: process.env.CLOUDINARY_FOLDER,
       quality: "auto",
       fetch_format: "auto",
     });
 
-    console.log(img);
-
-    return Promise.resolve(null);
+    return Promise.resolve(img.secure_url);
   };
 }
 
