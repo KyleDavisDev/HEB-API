@@ -3,7 +3,7 @@ import { SqlContext } from "../../Classes/Context/SqlContext";
 import { ImageMetadata } from "../../Models/ImageMetadata";
 import { ImageObjects } from "../../Models/ImageObjects";
 import { ImageTypes } from "../../Models/ImageTypes";
-import { FileContext } from "../../Classes/Context/FileContext";
+import { CloudinaryContext } from "../../Classes/Context/CloudinaryContext";
 import {
   addAsyncParams,
   getAllAsyncParams,
@@ -151,7 +151,7 @@ const imageRepositoryImpl: imageRepository = {
 
   saveImageAsync: async (params: saveImageParams): Promise<string | null> => {
     let { image, db } = params;
-    if (!db) db = FileContext; // default context
+    if (!db) db = CloudinaryContext; // default context
 
     const path = await db.saveImageAsync(image);
     if (!path) return Promise.resolve(null);
