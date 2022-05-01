@@ -170,21 +170,24 @@ describe("/images", () => {
       }
     });
 
-    it("should return status 301 on invalid image param type", async () => {
+    it("should return status 301 on invalid label type", async () => {
       // Given
       const status = 301;
       const image =
         "https://kyledavisdev.com/_next/image?url=%2Fstatic%2Fprofile-pic.jpg&w=256&q=75";
-      const label = "test value";
+      const invalidLabels = [1, -5, { key: "value" }];
 
-      //When
-      const result = await request
-        .post(`${basePath}${route}`)
-        .send({ image, label })
-        .set("Accept", "application/json");
+      for (let i = 0; i < invalidLabels.length; i++) {
+        const label = invalidLabels[i];
+        //When
+        const result = await request
+          .post(`${basePath}${route}`)
+          .send({ image, label })
+          .set("Accept", "application/json");
 
-      //Then
-      expect(result.statusCode).toEqual(status);
+        //Then
+        expect(result.statusCode).toEqual(status);
+      }
     });
   });
 });
