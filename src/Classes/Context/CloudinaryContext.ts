@@ -8,17 +8,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET,
 });
 
-class FileContext implements Context {
-  private static _instance: FileContext;
+class CloudinaryContext implements Context {
+  private static _instance: CloudinaryContext;
 
   private constructor() {}
 
-  static getInstance = (): FileContext => {
+  static getInstance = (): CloudinaryContext => {
     if (this._instance) {
       return this._instance;
     }
 
-    this._instance = new FileContext();
+    this._instance = new CloudinaryContext();
     return this._instance;
   };
 
@@ -42,5 +42,5 @@ class FileContext implements Context {
   };
 }
 
-const temp = FileContext.getInstance();
+const temp = CloudinaryContext.getInstance();
 export { temp as FileContext };
