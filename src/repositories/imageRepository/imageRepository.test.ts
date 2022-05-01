@@ -137,7 +137,6 @@ describe("ImageRepository", () => {
       const db: Context = createMock<Context>({
         queryAsync: () => Promise.resolve(null),
       });
-
       const sut = imageRepositoryImpl;
 
       // When
@@ -145,10 +144,6 @@ describe("ImageRepository", () => {
 
       // Then
       expect(images).toEqual(null);
-
-      // When
-
-      // Then
     });
   });
 });
