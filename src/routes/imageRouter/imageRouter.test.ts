@@ -36,7 +36,7 @@ describe("/images", () => {
     getAllAsyncMock = emptyArrPromise;
   });
 
-  describe("/", () => {
+  describe("@GET /", () => {
     it("should return 200 status", async () => {
       // Given
       const status = 200;
@@ -49,7 +49,7 @@ describe("/images", () => {
     });
   });
 
-  describe("/:id", () => {
+  describe("@GET /:id", () => {
     it("should return 301 if id is not a positive numeric value", async () => {
       //Given
       const invalidIds = [
@@ -113,6 +113,23 @@ describe("/images", () => {
 
       //Then
       expect(result.body).toEqual(image);
+    });
+  });
+
+  describe("@POST /", () => {
+    it("return status 301 on empty JSON", async () => {
+      // Given
+      const id = 5;
+      const status = 301;
+
+      //When
+      const result = await request
+        .post(`${basePath}${route}`)
+        .send({})
+        .set("Accept", "application/json");
+
+      //Then
+      expect(result.statusCode).toEqual(status);
     });
   });
 });
