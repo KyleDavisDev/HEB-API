@@ -1,12 +1,5 @@
-"use strict";
-
 import { Context } from "../../Classes/Context/Context";
-import { SqlContext } from "../../Classes/Context/SqlContext";
-import { FileContext } from "../../Classes/Context/FileContext";
 import { Image } from "../../Models/Image";
-import { ImageMetadata } from "../../Models/ImageMetadata";
-import { ImageObjects } from "../../Models/ImageObjects";
-import { ImageTypes } from "../../Models/ImageTypes";
 
 export interface getByIdAsyncParams {
   db?: Context;
