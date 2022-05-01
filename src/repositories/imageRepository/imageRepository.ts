@@ -17,7 +17,7 @@ export interface addAsyncParams {
 
 export interface saveImageParams {
   db?: Context;
-  image: string;
+  imageB64: string;
 }
 
 export interface imageRepository {
