@@ -140,7 +140,7 @@ describe("ImageRepository", () => {
       const sut = imageRepositoryImpl;
 
       // When
-      const images = await sut.saveImageAsync({ db, image });
+      const images = await sut.saveImageAsync({ db, imageB64: image });
 
       // Then
       expect(images).toEqual(null);
@@ -156,7 +156,7 @@ describe("ImageRepository", () => {
       const sut = imageRepositoryImpl;
 
       // When
-      const savedPath = await sut.saveImageAsync({ db, image });
+      const savedPath = await sut.saveImageAsync({ db, imageB64: image });
 
       // Then
       expect(savedPath).toEqual(path);
