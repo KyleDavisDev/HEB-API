@@ -14,16 +14,18 @@ describe("/images", () => {
   const route = "images";
   let request: SuperAgentTest;
   const nullPromise = Promise.resolve(null);
+  const emptyArrPromise = Promise.resolve([]);
   let getByIdAsyncMock: Promise<Image | null> = nullPromise;
   let addAsyncMock: Promise<Image | null> = nullPromise;
-  const emptyArrPromise = Promise.resolve([]);
   let getAllAsyncMock: Promise<Image[]> = emptyArrPromise;
+  let saveImageAsyncMock: Promise<string | null> = nullPromise;
 
   beforeAll(() => {
     const imageRepositoryImpl: imageRepository = {
       getAllAsync: () => getAllAsyncMock,
       getByIdAsync: () => getByIdAsyncMock,
       addAsync: () => addAsyncMock,
+      saveImageAsync: () => saveImageAsyncMock,
     };
     const app = serverSetup({ imageRepository: imageRepositoryImpl });
     request = supertest.agent(app);
@@ -34,6 +36,7 @@ describe("/images", () => {
     getByIdAsyncMock = nullPromise;
     addAsyncMock = nullPromise;
     getAllAsyncMock = emptyArrPromise;
+    saveImageAsyncMock = nullPromise;
   });
 
   describe("@GET /", () => {
@@ -117,7 +120,7 @@ describe("/images", () => {
   });
 
   describe("@POST /", () => {
-    it("return status 301 on empty JSON", async () => {
+    it("should return status 301 on empty JSON", async () => {
       // Given
       const status = 301;
 
@@ -131,40 +134,57 @@ describe("/images", () => {
       expect(result.statusCode).toEqual(status);
     });
 
-    it("return status 301 on empty missing file param", async () => {
+    it("should return status 301 on empty missing image param", async () => {
       // Given
       const status = 301;
-      const file = undefined;
+      const image = undefined;
       const label = "test value";
 
       //When
       const result = await request
         .post(`${basePath}${route}`)
-        .send({ file, label })
+        .send({ image, label })
         .set("Accept", "application/json");
 
       //Then
       expect(result.statusCode).toEqual(status);
     });
 
-    it("return status 301 on invalid file param type", async () => {
+    it("should return status 301 on invalid image param type", async () => {
       // Given
       const status = 301;
-      const invalidFileTypes = ["a", 123, "abc123", {}];
+      const invalidImageTypes = ["a", 123, "abc123", {}];
       const label = "test value";
 
-      for (let i = 0; i < invalidFileTypes.length; i++) {
-        const file = invalidFileTypes[i];
+      for (let i = 0; i < invalidImageTypes.length; i++) {
+        const image = invalidImageTypes[i];
 
         //When
         const result = await request
           .post(`${basePath}${route}`)
-          .send({ file, label })
+          .send({ image, label })
           .set("Accept", "application/json");
 
         //Then
         expect(result.statusCode).toEqual(status);
       }
+    });
+
+    it("should return status 301 on invalid image param type", async () => {
+      // Given
+      const status = 301;
+      const image =
+        "https://kyledavisdev.com/_next/image?url=%2Fstatic%2Fprofile-pic.jpg&w=256&q=75";
+      const label = "test value";
+
+      //When
+      const result = await request
+        .post(`${basePath}${route}`)
+        .send({ image, label })
+        .set("Accept", "application/json");
+
+      //Then
+      expect(result.statusCode).toEqual(status);
     });
   });
 });
