@@ -58,7 +58,7 @@ describe("ImageRepository", () => {
       const db: Context = createMock<Context>({
         queryAsync: () =>
           Promise.resolve([
-            { ...moqImage, ...moqType },
+            [{ ...moqImage, ...moqType }],
             [moqMetadata],
             [moqImageObjects],
           ]),
@@ -130,17 +130,17 @@ describe("ImageRepository", () => {
     });
   });
 
-  describe("saveImageAsync", () => {
+  describe("uploadImageAsync", () => {
     it("should return false on save error", async () => {
       // Given
       const image = "";
       const db: Context = createMock<Context>({
-        saveImageAsync: () => Promise.resolve(null),
+        uploadImageAsync: () => Promise.resolve(null),
       });
       const sut = imageRepositoryImpl;
 
       // When
-      const images = await sut.saveImageAsync({ db, imageB64: image });
+      const images = await sut.uploadImageAsync({ db, imageBuffer: image });
 
       // Then
       expect(images).toEqual(null);
@@ -151,12 +151,12 @@ describe("ImageRepository", () => {
       const image = "";
       const path = "random_save_path";
       const db: Context = createMock<Context>({
-        saveImageAsync: () => Promise.resolve(path),
+        uploadImageAsync: () => Promise.resolve(path),
       });
       const sut = imageRepositoryImpl;
 
       // When
-      const savedPath = await sut.saveImageAsync({ db, imageB64: image });
+      const savedPath = await sut.uploadImageAsync({ db, imageBuffer: image });
 
       // Then
       expect(savedPath).toEqual(path);
