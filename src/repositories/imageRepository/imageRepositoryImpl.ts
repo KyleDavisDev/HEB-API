@@ -150,10 +150,10 @@ const imageRepositoryImpl: imageRepository = {
   },
 
   saveImageAsync: async (params: saveImageParams): Promise<string | null> => {
-    let { image, db } = params;
+    let { imageB64, db } = params;
     if (!db) db = CloudinaryContext; // default context
 
-    const path = await db.saveImageAsync(image);
+    const path = await db.saveImageAsync(imageB64);
     if (!path) return Promise.resolve(null);
 
     return Promise.resolve(path);
