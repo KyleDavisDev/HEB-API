@@ -145,5 +145,20 @@ describe("ImageRepository", () => {
       // Then
       expect(images).toEqual(null);
     });
+
+    it("should return the image on success", async () => {
+      // Given
+      const image = _imageBuilder.AFullRandomImage().Build();
+      const db: Context = createMock<Context>({
+        queryAsync: () => Promise.resolve(null),
+      });
+      const sut = imageRepositoryImpl;
+
+      // When
+      const images = await sut.addAsync({ db, image });
+
+      // Then
+      expect(images).toEqual(null);
+    });
   });
 });
