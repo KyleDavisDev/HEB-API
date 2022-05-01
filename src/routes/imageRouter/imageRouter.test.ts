@@ -1,29 +1,47 @@
-import axios from "axios";
-
-import { imageRepository } from "../../repositories/imageRepository/imageRepository";
-require("dotenv").config({ path: "variables.env" });
-
-const nullJestFn = jest.fn(() => null);
-const getByIdAsyncFake = nullJestFn;
-const emptyJestFn = jest.fn(() => []);
-const getAllAsyncFake = emptyJestFn;
-jest.mock("../../repositories/imageRepository/imageRepository", () => {
-  return { getByIdAsync: getByIdAsyncFake, getAllAsync: getAllAsyncFake };
-});
+import { serverSetup } from "../../serverSetup/serverSetup";
+import supertest, { SuperAgentTest } from "supertest";
+import {
+  getAllAsyncParams,
+  getByIdAsyncParams,
+  imageRepository,
+} from "../../repositories/imageRepository/imageRepository";
+import { Image } from "../../Models/Image";
+import { ImageBuilder } from "../../Models/Builders/ImageBuilder";
 
 describe("/images", () => {
   jest.setTimeout(10000); // increase timeout
-  const port = parseInt(<string>process.env.DEFAULT_PORT, 10) || 8080;
-  const basePath = `http://localhost:${port}`;
+  const basePath = `/`;
   const route = "images";
+  let request: SuperAgentTest;
+  const nullPromise = Promise.resolve(null);
+  let getByIdAsyncMock: Promise<Image | null> = nullPromise;
+  const emptyArrPromise = Promise.resolve([]);
+  let getAllAsyncMock: Promise<Image[]> = emptyArrPromise;
+
+  beforeAll(() => {
+    const imageRepositoryImpl: imageRepository = {
+      getAllAsync: () => {
+        return Promise.resolve([]);
+      },
+      getByIdAsync: () => getByIdAsyncMock,
+    };
+    const app = serverSetup({ imageRepository: imageRepositoryImpl });
+    request = supertest.agent(app);
+  });
+
+  afterEach(() => {
+    // reset back to default after each
+    getByIdAsyncMock = nullPromise;
+    getAllAsyncMock = emptyArrPromise;
+  });
 
   describe("/", () => {
     it("should return 200 status", async () => {
-      //Given
+      // Given
       const status = 200;
 
       //When
-      const result = await axios.get(basePath);
+      const result = await request.get(`${basePath}`);
 
       //Then
       expect(result.status).toEqual(status);
@@ -31,18 +49,6 @@ describe("/images", () => {
   });
 
   describe("/:id", () => {
-    it("should accept id as a query parameter and return with 200 status", async () => {
-      //Given
-      const id = 5;
-      const status = 200;
-
-      //When
-      const result = await axios.get(`${basePath}/${route}/${id}`);
-
-      //Then
-      expect(result.status).toEqual(status);
-    });
-
     it("should return 301 if id is not a positive numeric value", async () => {
       //Given
       const invalidIds = [
@@ -63,13 +69,50 @@ describe("/images", () => {
         const id = invalidIds[i];
 
         //When
-        const result = await axios
-          .get(`${basePath}/${route}/${id}`)
-          .catch((x) => x.response);
+        const result = await request.get(`${basePath}${route}/${id}`);
 
         //Then
         expect(result.status).toEqual(status);
       }
+    });
+
+    it("should return status of 301 on no image found", async () => {
+      const id = 5;
+      const status = 301;
+
+      //When
+      const result = await request.get(`${basePath}${route}/${id}`);
+
+      //Then
+      expect(result.statusCode).toEqual(status);
+    });
+
+    it("should return with status code 200 on image found", async () => {
+      //Given
+      const id = 5;
+      const status = 200;
+      const image = new ImageBuilder().AFullRandomImage().Build();
+      getByIdAsyncMock = Promise.resolve(image);
+
+      //When
+      const result = await request.get(`${basePath}${route}/${id}`);
+
+      //Then
+      expect(result.status).toEqual(status);
+    });
+
+    it("should return an image when found", async () => {
+      //Given
+      const id = 5;
+      const status = 200;
+      const image = new ImageBuilder().AFullRandomImage().Build();
+      getByIdAsyncMock = Promise.resolve(image);
+
+      //When
+      const result = await request.get(`${basePath}${route}/${id}`);
+
+      //Then
+      expect(result.body).toEqual(image);
     });
   });
 });
