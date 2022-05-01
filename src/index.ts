@@ -1,4 +1,4 @@
-import { imageRepositoryImpl } from "./repositories/imageRepository/imageRepository";
+import { imageRepositoryImpl } from "./repositories/imageRepository/imageRepositoryImpl";
 
 require("dotenv").config({ path: "variables.env" });
 import { serverSetup } from "./serverSetup/serverSetup";
