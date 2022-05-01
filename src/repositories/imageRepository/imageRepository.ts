@@ -1,5 +1,6 @@
 import { Context } from "../../Classes/Context/Context";
 import { Image } from "../../Models/Image";
+import * as Buffer from "buffer";
 
 export interface getByIdAsyncParams {
   db?: Context;
@@ -17,12 +18,12 @@ export interface addAsyncParams {
 
 export interface saveImageParams {
   db?: Context;
-  imageB64: string;
+  imageBuffer: string;
 }
 
 export interface imageRepository {
   getByIdAsync: (params: getByIdAsyncParams) => Promise<Image | null>;
   getAllAsync: (params: getAllAsyncParams) => Promise<Image[]>;
   addAsync: (params: addAsyncParams) => Promise<Image | null>;
-  saveImageAsync: (params: saveImageParams) => Promise<string | null>;
+  uploadImageAsync: (params: saveImageParams) => Promise<string | null>;
 }
