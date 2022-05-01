@@ -119,7 +119,6 @@ describe("/images", () => {
   describe("@POST /", () => {
     it("return status 301 on empty JSON", async () => {
       // Given
-      const id = 5;
       const status = 301;
 
       //When
@@ -130,6 +129,42 @@ describe("/images", () => {
 
       //Then
       expect(result.statusCode).toEqual(status);
+    });
+
+    it("return status 301 on empty missing file param", async () => {
+      // Given
+      const status = 301;
+      const file = undefined;
+      const label = "test value";
+
+      //When
+      const result = await request
+        .post(`${basePath}${route}`)
+        .send({ file, label })
+        .set("Accept", "application/json");
+
+      //Then
+      expect(result.statusCode).toEqual(status);
+    });
+
+    it("return status 301 on invalid file param type", async () => {
+      // Given
+      const status = 301;
+      const invalidFileTypes = ["a", 123, "abc123", {}];
+      const label = "test value";
+
+      for (let i = 0; i < invalidFileTypes.length; i++) {
+        const file = invalidFileTypes[i];
+
+        //When
+        const result = await request
+          .post(`${basePath}${route}`)
+          .send({ file, label })
+          .set("Accept", "application/json");
+
+        //Then
+        expect(result.statusCode).toEqual(status);
+      }
     });
   });
 });
