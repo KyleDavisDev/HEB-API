@@ -16,9 +16,15 @@ export interface getAllAsyncParams {
   db?: Context;
 }
 
+export interface addAsyncParams {
+  db?: Context;
+  image: Image;
+}
+
 export interface imageRepository {
   getByIdAsync: (params: getByIdAsyncParams) => Promise<Image | null>;
   getAllAsync: (params: getAllAsyncParams) => Promise<Image[]>;
+  addAsync: (params: addAsyncParams) => Promise<Image | null>;
 }
 
 const imageRepositoryImpl: imageRepository = {
@@ -73,7 +79,6 @@ const imageRepositoryImpl: imageRepository = {
   },
 
   getAllAsync: async (params: getAllAsyncParams): Promise<Image[]> => {
-    console.log("INside of the ALL123");
     let { db } = params;
     if (!db) db = SqlContext; // default context
 
@@ -140,6 +145,23 @@ const imageRepositoryImpl: imageRepository = {
     });
 
     return Promise.resolve(images);
+  },
+
+  addAsync: async (params: addAsyncParams): Promise<Image | null> => {
+    let { image, db } = params;
+    if (!db) db = SqlContext; // default context
+
+    const query = `INSERT INTO 'Images'('TypeId', 'Label', 'Path', 'CreateDate', 'IsActive')
+                   VALUES ((SELECT TOP 1 Id FROM ImageTypes WHERE Value = ? AND IsActive = 1), ?, ?, now(), true);`;
+
+    const results = await db.queryAsync(query, [
+      image.Type.Value,
+      image.Label,
+      image.Path,
+    ]);
+    if (!results) return Promise.resolve(null);
+
+    return Promise.resolve(image);
   },
 };
 
