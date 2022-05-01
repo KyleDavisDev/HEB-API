@@ -45,10 +45,7 @@ const imageHandler = {
         ? await imageHandler.downloadImage(image)
         : image;
 
-      console.log("inside of handlr");
       const path = await imageRepo.saveImageAsync({ image: imageB64 });
-
-      console.log(path);
 
       // const saveImage = await imageRepo.addAsync({ image });
 
