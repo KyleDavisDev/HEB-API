@@ -57,22 +57,6 @@ class SqlContext implements Context {
     return this._pool;
   };
 
-  getConnectionAsync = () => {
-    return new Promise((resolve, reject) => {
-      this.getPool().getConnection(function (err, connection) {
-        if (err) {
-          return reject(err);
-        }
-
-        // promisify the query method - can now use async/await
-        connection.query = promisify(connection.query);
-
-        // return connection
-        resolve(connection);
-      });
-    });
-  };
-
   queryAsync = (sql: string, args: string) => {
     return new Promise((resolve, reject) => {
       this.getPool().query(sql, args, (err, rows) => {
@@ -84,6 +68,10 @@ class SqlContext implements Context {
       });
     });
   };
+
+  saveImageAsync(image: string): Promise<string | null> {
+    return Promise.resolve(null);
+  }
 }
 const temp = SqlContext.getInstance();
 export { temp as SqlContext };

@@ -19,6 +19,10 @@ class OracleContext implements Context {
   queryAsync(sql: string, args: string): Promise<any> {
     return Promise.resolve(undefined);
   }
+
+  saveImageAsync(image: string): Promise<string | null> {
+    return Promise.resolve(null);
+  }
 }
 
 module.exports = OracleContext.getInstance();
