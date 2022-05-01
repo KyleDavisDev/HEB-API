@@ -20,7 +20,7 @@ class OracleContext implements Context {
     return Promise.resolve(undefined);
   }
 
-  saveImageAsync(image: string): Promise<string | null> {
+  uploadImageAsync(image: string): Promise<string | null> {
     return Promise.resolve(null);
   }
 }
