@@ -105,7 +105,6 @@ describe("/images", () => {
     it("should return an image when found", async () => {
       //Given
       const id = 5;
-      const status = 200;
       const image = new ImageBuilder().AFullRandomImage().Build();
       getByIdAsyncMock = Promise.resolve(image);
 
