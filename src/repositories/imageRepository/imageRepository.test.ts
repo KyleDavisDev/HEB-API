@@ -9,7 +9,7 @@ import { Image } from "../../Models/Image";
 import { ImageMetadataBuilder } from "../../Models/Builders/ImageMetadataBuilder";
 import { ImageObjectBuilder } from "../../Models/Builders/ImageObjectBuilder";
 
-describe.skip("ImageRepository", () => {
+describe("ImageRepository", () => {
   const _imageBuilder = new ImageBuilder();
   const _typeBuilder = new ImageTypeBuilder();
   const _metaDataBuilder = new ImageMetadataBuilder();
