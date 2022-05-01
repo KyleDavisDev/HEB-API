@@ -42,19 +42,20 @@ const imageRepositoryImpl: imageRepository = {
       imageObjects.push(obj);
     });
 
+    const imageRow = results[0][0];
     const imageType: ImageTypes = {
-      CreateDate: results[0]["ImageTypes.CreateDate"],
-      Id: results[0]["ImageTypes.Id"],
-      IsActive: results[0]["ImageTypes.IsActive"],
-      Value: results[0]["ImageTypes.Value"],
+      CreateDate: imageRow["ImageTypes.CreateDate"],
+      Id: imageRow["ImageTypes.Id"],
+      IsActive: imageRow["ImageTypes.IsActive"],
+      Value: imageRow["ImageTypes.Value"],
     };
 
     const image: Image = {
-      CreateDate: results[0]["Images.CreateDate"],
-      Id: results[0]["Images.Id"],
-      IsActive: results[0]["Images.IsActive"],
-      Label: results[0]["Images.Label"],
-      Path: results[0]["Images.Path"],
+      Id: imageRow["Images.Id"],
+      CreateDate: parseInt(imageRow["Images.CreateDate"], 10),
+      IsActive: imageRow["Images.IsActive"] === 1,
+      Label: imageRow["Images.Label"],
+      Path: imageRow["Images.Path"],
       Type: imageType,
       Metadata: metaData,
       Objects: imageObjects,
@@ -132,28 +133,61 @@ const imageRepositoryImpl: imageRepository = {
     return Promise.resolve(images);
   },
 
+  // insert record(s) in DB
   addAsync: async (params: addAsyncParams): Promise<Image | null> => {
+    // TODO: it'd be nice to have this method use a transaction but not enough time
     let { image, db } = params;
     if (!db) db = SqlContext; // default context
 
-    const query = `INSERT INTO 'Images'('TypeId', 'Label', 'Path', 'CreateDate', 'IsActive')
-                   VALUES ((SELECT TOP 1 Id FROM ImageTypes WHERE Value = ? AND IsActive = 1), ?, ?, now(), true);`;
+    // 1) Start off with saving the image
+    const insertImageQuery = `INSERT INTO Images(TypeId, Label, Path, CreateDate, IsActive)
+                   VALUES ((SELECT Id FROM ImageTypes WHERE Value = ? AND IsActive = 1 LIMIT 1), ?, ?, now(), true);`;
 
-    const results = await db.queryAsync(query, [
+    const insertedImageRow = await db.queryAsync(insertImageQuery, [
       image.Type.Value,
       image.Label,
       image.Path,
     ]);
-    if (!results) return Promise.resolve(null);
+    if (!insertedImageRow) return Promise.resolve(null);
+    image.Id = insertedImageRow.insertId;
 
-    return Promise.resolve(image);
+    // 2) Then save the metadata
+    let insertMetaQuery = "";
+    let metaParams: any[] = [];
+    image.Metadata.forEach((data) => {
+      insertMetaQuery += `INSERT INTO ImageMetadata(ImageId, Name, Value, CreateDate, IsActive)
+                    VALUES (?, ?, ?, now(), true);`;
+      metaParams.push(...[image.Id, data.Name, data.Value]);
+    });
+
+    const insertedMetadatas = await db.queryAsync(insertMetaQuery, metaParams);
+    if (!insertedMetadatas) return Promise.resolve(null);
+
+    // 3) Lastly, save the objects
+    let insertObjectsQuery = "";
+    let objectParams: any[] = [];
+    image.Objects.forEach((data) => {
+      insertObjectsQuery += `INSERT INTO ImageObjects(ImageId, Name, Confidence, CreateDate, IsActive)
+                    VALUES (?, ?, ?, now(), true);`;
+      objectParams.push(...[image.Id, data.Name, 15]);
+    });
+
+    const insertedObjects = await db.queryAsync(
+      insertObjectsQuery,
+      objectParams
+    );
+    if (!insertedObjects) return Promise.resolve(null);
+
+    const savedImage = await imageRepositoryImpl.getByIdAsync({ id: image.Id });
+
+    return Promise.resolve(savedImage);
   },
 
-  saveImageAsync: async (params: saveImageParams): Promise<string | null> => {
-    let { imageB64, db } = params;
+  uploadImageAsync: async (params: saveImageParams): Promise<string | null> => {
+    let { imageBuffer, db } = params;
     if (!db) db = CloudinaryContext; // default context
 
-    const path = await db.saveImageAsync(imageB64);
+    const path = await db.uploadImageAsync(imageBuffer);
     if (!path) return Promise.resolve(null);
 
     return Promise.resolve(path);
