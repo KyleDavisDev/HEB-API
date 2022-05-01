@@ -1,6 +1,5 @@
-import express, { NextFunction, Request, Response } from "express";
-import { param, validationResult } from "express-validator";
-import { Image } from "../../Models/Image";
+import express from "express";
+import { body, oneOf, param } from "express-validator";
 import { imageRepository } from "../../repositories/imageRepository/imageRepository";
 import { imageHandler } from "../../handlers/imageHandler";
 
@@ -22,6 +21,19 @@ const imageRouter = (imageRepo: imageRepository) => {
     "/:id",
     param("id").exists().isInt({ min: 1 }),
     imageHandler.getById(imageRepo)
+  );
+
+  /** @route POST /images
+   *  @description submit image
+   *  @param {File | string} req.body.file - file to be saved
+   *  @param {string?} req.body.label - label of the image (optional)
+   *  @return JSON of the saved image along with metadata and detected objects
+   */
+  router.post(
+    "/",
+    oneOf([body("file").exists().isBase64(), body("file").exists().isURL()]),
+    body("label").optional().isString(),
+    imageHandler.saveImage(imageRepo)
   );
 
   return router;
