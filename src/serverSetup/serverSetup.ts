@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-// import { imageRouter } from "../routes/imageRouter/imageRouter";
+import { imageRouter } from "../routes/imageRouter/imageRouter";
 import { imageRepository } from "../repositories/imageRepository/imageRepository";
 import { imageHandler } from "../handlers/imageHandler";
 import { param } from "express-validator";
@@ -16,13 +16,8 @@ const serverSetup = (params: serverParams) => {
   app.get("/", async (req: Request, res: Response) => {
     res.status(200).send("success");
   });
-  app.get("/images", imageHandler.getAll(params.imageRepository));
 
-  app.get(
-    "/images/:id",
-    param("id").exists().isInt({ min: 1 }),
-    imageHandler.getById(params.imageRepository)
-  );
+  app.use("/images", imageRouter(params.imageRepository));
 
   return app;
 };
