@@ -69,7 +69,7 @@ class SqlContext implements Context {
     });
   };
 
-  saveImageAsync(image: string): Promise<string | null> {
+  uploadImageAsync(image: string): Promise<string | null> {
     return Promise.resolve(null);
   }
 }
