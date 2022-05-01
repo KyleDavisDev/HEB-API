@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon src/server/server.ts",
+    "start": "nodemon src/index.ts",
     "test": "./node_modules/.bin/jest --watch"
   },
   "dependencies": {
@@ -24,10 +24,12 @@
     "@types/jest": "^27.4.1",
     "@types/mysql": "^2.15.21",
     "@types/seedrandom": "^3.0.2",
+    "@types/supertest": "^2.0.12",
     "jest": "^27.5.1",
     "jest-ts-auto-mock": "^2.1.0",
     "nodemon": "^2.0.15",
     "prettier": "^2.6.2",
+    "supertest": "^6.2.3",
     "ts-auto-mock": "^3.5.1",
     "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
