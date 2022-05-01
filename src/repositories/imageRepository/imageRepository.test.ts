@@ -1,5 +1,4 @@
 import { createMock } from "ts-auto-mock";
-import { imageRepository, imageRepositoryImpl } from "./imageRepository";
 import { Context } from "../../Classes/Context/Context";
 import { ImageMetadata } from "../../Models/ImageMetadata";
 import { ImageObjects } from "../../Models/ImageObjects";
@@ -8,6 +7,7 @@ import { ImageTypeBuilder } from "../../Models/Builders/ImageTypeBuilder";
 import { Image } from "../../Models/Image";
 import { ImageMetadataBuilder } from "../../Models/Builders/ImageMetadataBuilder";
 import { ImageObjectBuilder } from "../../Models/Builders/ImageObjectBuilder";
+import { imageRepositoryImpl } from "./imageRepositoryImpl";
 
 describe("ImageRepository", () => {
   const _imageBuilder = new ImageBuilder();
@@ -79,7 +79,7 @@ describe("ImageRepository", () => {
     });
   });
 
-  describe("getAll", () => {
+  describe("getAllAsync", () => {
     it("should return empty set when no images are found", async () => {
       // Given
       const db: Context = createMock<Context>();
@@ -130,35 +130,36 @@ describe("ImageRepository", () => {
     });
   });
 
-  describe("add", () => {
+  describe("saveImageAsync", () => {
     it("should return false on save error", async () => {
       // Given
-      const image = _imageBuilder.AFullRandomImage().Build();
+      const image = "";
       const db: Context = createMock<Context>({
-        queryAsync: () => Promise.resolve(null),
+        saveImageAsync: () => Promise.resolve(null),
       });
       const sut = imageRepositoryImpl;
 
       // When
-      const images = await sut.addAsync({ db, image });
+      const images = await sut.saveImageAsync({ db, image });
 
       // Then
       expect(images).toEqual(null);
     });
 
-    it("should return the image on success", async () => {
+    it("should return the saved path on success", async () => {
       // Given
-      const image = _imageBuilder.AFullRandomImage().Build();
+      const image = "";
+      const path = "random_save_path";
       const db: Context = createMock<Context>({
-        queryAsync: () => Promise.resolve(null),
+        saveImageAsync: () => Promise.resolve(path),
       });
       const sut = imageRepositoryImpl;
 
       // When
-      const images = await sut.addAsync({ db, image });
+      const savedPath = await sut.saveImageAsync({ db, image });
 
       // Then
-      expect(images).toEqual(null);
+      expect(savedPath).toEqual(path);
     });
   });
 });
