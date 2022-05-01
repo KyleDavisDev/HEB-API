@@ -1,4 +1,6 @@
+import * as Buffer from "buffer";
+
 export interface Context {
   queryAsync: (sql: string, args?: any) => Promise<any>;
-  saveImageAsync: (image: string) => Promise<string | null>;
+  uploadImageAsync: (imageBuffer: string) => Promise<string | null>;
 }
