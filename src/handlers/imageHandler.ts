@@ -12,19 +12,29 @@ const imageHandler = {
   getAll: (imageRepo: imageRepository) => {
     return async (req: Request, res: Response) => {
       if (!validationResult(req).isEmpty()) {
-        res.status(301).end();
-        return;
+        return res.status(301).send({
+          msg: `Invalid objects format. Objects must be a string and values separated by a comma. Ex: "dog" or "dog,cat".`,
+        });
       }
-      const { objects } = req.query;
+
+      // Grab from query
+      const { objects: queryObjects } = req.query;
       let images: Image[] = [];
-      if (objects && typeof objects === "string") {
+
+      // Utilize objects query if available otherwise skip
+      if (queryObjects && typeof queryObjects === "string") {
         // do a  bit of massaging to get in right format
-        const objs = objects.replace(/"/g, "").split(",");
+        const objects = queryObjects.replace(/"/g, "").split(",");
 
         // grab the images Ids that contain that object
         const ids = await imageRepo.getIdsByObject({
-          objects: objs,
+          objects: objects,
         });
+        if (ids.length === 0) {
+          return res.status(301).send({
+            msg: `.No images found with requested categories of '${objects}'`,
+          });
+        }
 
         // turn Ids into images!
         images = await imageRepo.getByIdsAsync({ ids });
@@ -39,8 +49,9 @@ const imageHandler = {
   getById: (imageRepo: imageRepository) => {
     return async (req: Request, res: Response) => {
       if (!validationResult(req).isEmpty()) {
-        res.status(301).end();
-        return;
+        return res
+          .status(301)
+          .send({ msg: `Invalid Id format. Id must be a number.` });
       }
 
       const { id } = req.params;
@@ -58,8 +69,9 @@ const imageHandler = {
   saveImage: (imageRepo: imageRepository) => {
     return async (req: Request, res: Response) => {
       if (!validationResult(req).isEmpty()) {
-        res.status(301).end();
-        return;
+        return res.status(301).send({
+          msg: `Invalid JSON format. Image must be a URL or base64 encoded. Label, if provided, must be a string.`,
+        });
       }
 
       const { image, label } = req.body;
@@ -78,7 +90,7 @@ const imageHandler = {
       }
 
       // 2) Get the objects of the image
-      const objects: ImageObjects[] = await imageRepo.getImageObjects({
+      const objects: ImageObjects[] = await imageRepo.discoverImageObjects({
         imageB64,
       });
       if (objects.length === 0) {
