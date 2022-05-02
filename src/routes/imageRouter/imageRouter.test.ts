@@ -24,11 +24,13 @@ describe("/images", () => {
 
   beforeAll(() => {
     const imageRepositoryImpl: imageRepository = {
-      getAllAsync: () => getAllAsyncMock,
       getByIdAsync: () => getByIdAsyncMock,
+      getByIdsAsync: () => Promise.resolve([]),
+      getAllAsync: () => getAllAsyncMock,
+      getIdsByObject: () => Promise.resolve([]),
       addAsync: () => addAsyncMock,
       uploadImageAsync: () => uploadImageAsyncMock,
-      getImageObjects: () => getImageObjectsMock,
+      discoverImageObjects: () => getImageObjectsMock,
     };
     const app = serverSetup({ imageRepository: imageRepositoryImpl });
     request = supertest.agent(app);
