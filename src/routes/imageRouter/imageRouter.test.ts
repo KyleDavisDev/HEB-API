@@ -10,8 +10,7 @@ describe("/images", () => {
   jest.setTimeout(40000); // increase timeout
   const _imageBuilder = new ImageBuilder();
   const _imageObjectBuilder = new ImageObjectBuilder();
-  const basePath = `/`;
-  const route = "images";
+  const basePath = `/images`;
   let request: SuperAgentTest;
   const nullPromise = Promise.resolve(null);
   const emptyArrPromise = Promise.resolve([]);
@@ -34,6 +33,7 @@ describe("/images", () => {
       uploadImageAsync: () => uploadImageAsyncMock,
       discoverImageObjectsAsync: () => discoverImageObjectsMock,
     };
+
     const app = serverSetup({ imageRepository: imageRepositoryImpl });
     request = supertest.agent(app);
   });
@@ -51,9 +51,75 @@ describe("/images", () => {
     it("should return 200 status", async () => {
       // Given
       const status = 200;
+      getAllAsyncMock = Promise.resolve([]);
 
       //When
-      const result = await request.get(`${basePath}`);
+      const result = await request.get(basePath);
+      // console.log(result.body);
+
+      //Then
+      expect(result.status).toEqual(status);
+    });
+
+    it("should return all available images", async () => {
+      // Given
+      const status = 200;
+      const images = [
+        _imageBuilder.AFullRandomImage().Build(),
+        _imageBuilder.ANewImage().AFullRandomImage().Build(),
+      ];
+      getAllAsyncMock = Promise.resolve(images);
+
+      //When
+      const result = await request.get(basePath);
+
+      //Then
+      expect(result.body).toEqual(images);
+    });
+  });
+
+  describe("@GET /?objects=:objects", () => {
+    it("should return status 301 on invalid values", async () => {
+      // Given
+      const status = 301;
+      const invalidObject = "12312&object=123";
+
+      //When
+      const result = await request
+        .get(`${basePath}`)
+        .query({ objects: invalidObject });
+
+      //Then
+      expect(result.status).toEqual(status);
+    });
+
+    it("should return status 301 on if no images contain the category", async () => {
+      // Given
+      const status = 301;
+      const objectQuery = '"dog"';
+      getIdsByObjectAsync = Promise.resolve([]);
+
+      //When
+      const result = await request
+        .get(`${basePath}`)
+        .query({ objects: objectQuery });
+
+      //Then
+      expect(result.status).toEqual(status);
+    });
+
+    it("should return status 200 if images are found", async () => {
+      // Given
+      const status = 200;
+      const objectQuery = '"dog,cat,bird"';
+      const image = _imageBuilder.AFullRandomImage().Build();
+      getIdsByObjectAsync = Promise.resolve([1, 2, 3]);
+      getByIdsAsyncMock = Promise.resolve([image]);
+
+      //When
+      const result = await request
+        .get(`${basePath}`)
+        .query({ objects: objectQuery });
 
       //Then
       expect(result.status).toEqual(status);
@@ -81,7 +147,7 @@ describe("/images", () => {
         const id = invalidIds[i];
 
         //When
-        const result = await request.get(`${basePath}${route}/${id}`);
+        const result = await request.get(`${basePath}/${id}`);
 
         //Then
         expect(result.status).toEqual(status);
@@ -93,7 +159,7 @@ describe("/images", () => {
       const status = 301;
 
       //When
-      const result = await request.get(`${basePath}${route}/${id}`);
+      const result = await request.get(`${basePath}/${id}`);
 
       //Then
       expect(result.statusCode).toEqual(status);
@@ -107,7 +173,7 @@ describe("/images", () => {
       getByIdAsyncMock = Promise.resolve(image);
 
       //When
-      const result = await request.get(`${basePath}${route}/${id}`);
+      const result = await request.get(`${basePath}/${id}`);
 
       //Then
       expect(result.status).toEqual(status);
@@ -120,7 +186,7 @@ describe("/images", () => {
       getByIdAsyncMock = Promise.resolve(image);
 
       //When
-      const result = await request.get(`${basePath}${route}/${id}`);
+      const result = await request.get(`${basePath}/${id}`);
 
       //Then
       expect(result.body).toEqual(image);
@@ -134,7 +200,7 @@ describe("/images", () => {
 
       //When
       const result = await request
-        .post(`${basePath}${route}`)
+        .post(`${basePath}`)
         .send({})
         .set("Accept", "application/json");
 
@@ -150,7 +216,7 @@ describe("/images", () => {
 
       //When
       const result = await request
-        .post(`${basePath}${route}`)
+        .post(`${basePath}`)
         .send({ image, label })
         .set("Accept", "application/json");
 
@@ -169,7 +235,7 @@ describe("/images", () => {
 
         //When
         const result = await request
-          .post(`${basePath}${route}`)
+          .post(`${basePath}`)
           .send({ image, label })
           .set("Accept", "application/json");
 
@@ -189,7 +255,7 @@ describe("/images", () => {
         const label = invalidLabels[i];
         //When
         const result = await request
-          .post(`${basePath}${route}`)
+          .post(`${basePath}`)
           .send({ image, label })
           .set("Accept", "application/json");
 
@@ -212,7 +278,7 @@ describe("/images", () => {
 
       //When
       const result = await request
-        .post(`${basePath}${route}`)
+        .post(`${basePath}`)
         .send({ image: imageLink, label })
         .set("Accept", "application/json");
 
