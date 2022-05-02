@@ -6,7 +6,7 @@ import { imageRepository } from "../repositories/imageRepository/imageRepository
 import { validationResult } from "express-validator";
 import { ImageMetadata, ImageMetadataModel } from "../Models/ImageMetadata";
 import { ImageTypeModel } from "../Models/ImageTypes";
-import { ImageObjectModel, ImageObjects } from "../Models/ImageObjects";
+import { ImageObjects } from "../Models/ImageObjects";
 
 const imageHandler = {
   getAll: (imageRepo: imageRepository) => {
@@ -55,14 +55,16 @@ const imageHandler = {
       if (!typeOfImage) {
         return res
           .status(400)
-          .send({ msg: "unable to determine what type of image this is." });
+          .send({ msg: "Unable to determine the type of image this is." });
       }
 
       // 2) Get the objects of the image
-      const objects = await imageHandler.getImageObjects(imageB64);
+      const objects: ImageObjects[] = await imageRepo.getImageObjects({
+        imageB64,
+      });
       if (objects.length === 0) {
         return res.status(400).send({
-          msg: "unable to determine what objects are inside of this image.",
+          msg: "Unable to determine the objects inside of the image.",
         });
       }
 
@@ -134,47 +136,6 @@ const imageHandler = {
     }
 
     return Promise.resolve(imageMetadata);
-  },
-
-  getImageObjects: async (imageB64: string): Promise<ImageObjects[]> => {
-    const imageObjects: ImageObjects[] = [];
-
-    try {
-      const authorization = `Basic ${process.env.IMAGGA_AUTHORIZATION}`;
-      const responseUpload = await axios.post(
-        "https://api.imagga.com/v2/uploads",
-        { image: imageB64, image_base64: imageB64 },
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: authorization,
-          },
-        }
-      );
-
-      const uploadID = responseUpload.data.result.upload_id;
-
-      const responseTags = await axios.get(
-        `https://api.imagga.com/v2/tags/?image_upload_id=${uploadID}`,
-        {
-          headers: {
-            Authorization: authorization,
-          },
-        }
-      );
-
-      responseTags.data.result.tags.forEach((tag: any) => {
-        const imageObj = { ...ImageObjectModel };
-        imageObj.Name = tag.tag.en;
-        imageObj.Confidence = tag.confidence;
-
-        imageObjects.push(imageObj);
-      });
-    } catch (error: any) {
-      return Promise.resolve(imageObjects);
-    }
-
-    return Promise.resolve(imageObjects);
   },
 };
 
