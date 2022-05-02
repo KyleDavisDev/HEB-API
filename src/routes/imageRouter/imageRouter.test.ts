@@ -56,7 +56,6 @@ describe("/images", () => {
 
       //When
       const result = await request.get(basePath);
-      // console.log(result.body);
 
       //Then
       expect(result.status).toEqual(status);
