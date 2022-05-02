@@ -1,5 +1,5 @@
 import { createMock } from "ts-auto-mock";
-import { Context } from "../../Classes/Context/Context";
+import { Context, imageObject } from "../../Classes/Context/Context";
 import { ImageMetadata } from "../../Models/ImageMetadata";
 import { ImageObjects } from "../../Models/ImageObjects";
 import { ImageBuilder } from "../../Models/Builders/ImageBuilder";
@@ -345,6 +345,47 @@ describe("ImageRepository", () => {
 
       // Then
       expect(savedPath).toEqual(path);
+    });
+  });
+
+  describe("discoverImageObjectsAsync", () => {
+    it("should return empty list if no objects are found", async () => {
+      // Given
+      const imageB64 = "";
+      const db: Context = createMock<Context>({
+        discoverImageObjectsAsync: () => Promise.resolve([]),
+      });
+      const sut = imageRepositoryImpl;
+
+      // When
+      const images = await sut.discoverImageObjectsAsync({ db, imageB64 });
+
+      // Then
+      expect(images).toEqual([]);
+    });
+
+    it("should return list of objects on success", async () => {
+      // Given
+      const imageB64 = "";
+      const discoveredObjects: imageObject[] = [
+        { name: "dog", value: 10 },
+        { name: "cat", value: 11 },
+        { name: "food", value: 7 },
+      ];
+      const db: Context = createMock<Context>({
+        discoverImageObjectsAsync: () => Promise.resolve(discoveredObjects),
+      });
+      const sut = imageRepositoryImpl;
+
+      // When
+      const objects = await sut.discoverImageObjectsAsync({ db, imageB64 });
+
+      // Then
+      expect(objects.length).toEqual(discoveredObjects.length);
+      expect(objects[0].Name).toEqual(discoveredObjects[0].name);
+      expect(objects[0].Confidence).toEqual(discoveredObjects[0].value);
+      expect(objects[1].Name).toEqual(discoveredObjects[1].name);
+      expect(objects[1].Confidence).toEqual(discoveredObjects[1].value);
     });
   });
 });
