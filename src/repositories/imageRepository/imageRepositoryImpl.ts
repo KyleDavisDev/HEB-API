@@ -8,6 +8,8 @@ import {
   addAsyncParams,
   getAllAsyncParams,
   getByIdAsyncParams,
+  getByIdsAsyncParams,
+  getIdsByObjectParam,
   getImageObjectsParams,
   imageRepository,
   saveImageParams,
@@ -64,6 +66,77 @@ const imageRepositoryImpl: imageRepository = {
     };
 
     return image;
+  },
+
+  getByIdsAsync: async (params: getByIdsAsyncParams): Promise<Image[]> => {
+    let { ids, db } = params;
+    if (!db) db = SqlContext; // default context
+
+    const query = `SELECT Images.Id as 'Images.Id', Images.TypeId as 'Images.TypeId', Images.Label as 'Images.Label',
+                        Images.Path as 'Images.Path', Images.CreateDate as 'Images.CreateDate', Images.IsActive as 'Images.IsActive',
+                        ImageTypes.Id as 'ImageTypes.Id', ImageTypes.Value as 'ImageTypes.Value',
+                        ImageTypes.CreateDate as 'ImageTypes.CreateDate', ImageTypes.IsActive as 'ImageTypes.IsActive'
+                   FROM Images
+                   JOIN ImageTypes ON Images.TypeID = ImageTypes.Id
+                   WHERE Images.Id IN ? AND Images.IsActive = 1 AND ImageTypes.IsActive = 1;
+                   SELECT Id, ImageId, Name, Value,	CreateDate,	IsActive  FROM ImageMetadata WHERE ImageId IN ? AND IsActive = 1;
+                   SELECT Id, ImageId, Name, Confidence, CreateDate, IsActive FROM ImageObjects WHERE ImageId IN ? AND IsActive = 1;`;
+
+    const results = await db
+      .queryAsync(query, [[ids], [ids], [ids]])
+      .catch((x) => x);
+    if (!results || results[0].length === 0) return [];
+
+    // Piecing it all together!
+    // The tradeoff of having such a normalized DB is that now we have to put more effort into piecing everything together
+    const metaData: { [key: number]: ImageMetadata[] } = {};
+    results[1].forEach((data: ImageMetadata) => {
+      const key = data.ImageId;
+
+      // initialize array at key if we don't already have something there
+      if (!metaData[key]) {
+        metaData[key] = [];
+      }
+
+      metaData[key].push(data);
+    });
+
+    const imageObjects: { [key: number]: ImageObjects[] } = [];
+    results[2].forEach((obj: ImageObjects) => {
+      const key = obj.ImageId;
+
+      // initialize array at key if we don't already have something there
+      if (!imageObjects[key]) {
+        imageObjects[key] = [];
+      }
+
+      imageObjects[key].push(obj);
+    });
+
+    const images: Image[] = [];
+    results[0].forEach((row: any) => {
+      const type: ImageTypes = {
+        CreateDate: row["ImageTypes.CreateDate"],
+        Id: row["ImageTypes.Id"],
+        IsActive: row["ImageTypes.IsActive"],
+        Value: row["ImageTypes.Value"],
+      };
+
+      const image: Image = {
+        CreateDate: row["Images.CreateDate"],
+        Id: row["Images.Id"],
+        IsActive: row["Images.IsActive"],
+        Label: row["Images.Label"],
+        Path: row["Images.Path"],
+        Type: type,
+        Metadata: metaData[row["Images.Id"]],
+        Objects: imageObjects[row["Images.Id"]],
+      };
+
+      images.push(image);
+    });
+
+    return images;
   },
 
   getAllAsync: async (params: getAllAsyncParams): Promise<Image[]> => {
@@ -133,6 +206,22 @@ const imageRepositoryImpl: imageRepository = {
     });
 
     return images;
+  },
+
+  getIdsByObject: async (params: getIdsByObjectParam): Promise<number[]> => {
+    let { objects, db } = params;
+    if (objects.length === 0) return [];
+    if (!db) db = SqlContext; // default context
+
+    const query = `SELECT DISTINCT Images.Id FROM Images
+                   JOIN ImageObjects ON ImageObjects.ImageId = Images.Id
+                   WHERE Images.IsActive = 1 AND ImageObjects.IsActive = 1 AND ImageObjects.Name IN ?;`;
+    const results = await db.queryAsync(query, [[objects]]).catch((x) => x);
+    if (!results) return [];
+
+    const Ids = results.map((row: any) => row.Id);
+
+    return Promise.resolve(Ids);
   },
 
   // insert record(s) in DB
