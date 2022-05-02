@@ -1,8 +1,7 @@
 require("dotenv").config({ path: "variables.env" });
 import axios from "axios";
-import { ImageObjectModel, ImageObjects } from "../../Models/ImageObjects";
 
-import { Context } from "./Context";
+import { Context, imageObject } from "./Context";
 
 class ImaggaContext implements Context {
   private static _instance: ImaggaContext;
@@ -24,8 +23,8 @@ class ImaggaContext implements Context {
     return Promise.resolve(null);
   };
 
-  getImageObjectsAsync = async (imageB64: string): Promise<ImageObjects[]> => {
-    const imageObjects: ImageObjects[] = [];
+  getImageObjectsAsync = async (imageB64: string): Promise<imageObject[]> => {
+    const imageObjects: imageObject[] = [];
 
     try {
       const authorization = `Basic ${process.env.IMAGGA_AUTHORIZATION}`;
@@ -52,17 +51,17 @@ class ImaggaContext implements Context {
       );
 
       responseTags.data.result.tags.forEach((tag: any) => {
-        const imageObj = { ...ImageObjectModel };
-        imageObj.Name = tag.tag.en;
-        imageObj.Confidence = tag.confidence;
-
+        const imageObj: imageObject = {
+          name: tag.tag.en,
+          value: tag.confidence,
+        };
         imageObjects.push(imageObj);
       });
     } catch (error: any) {
-      return Promise.resolve(imageObjects);
+      return imageObjects;
     }
 
-    return Promise.resolve(imageObjects);
+    return imageObjects;
   };
 }
 
