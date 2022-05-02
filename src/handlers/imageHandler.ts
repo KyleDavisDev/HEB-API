@@ -7,6 +7,7 @@ import { validationResult } from "express-validator";
 import { ImageMetadata, ImageMetadataModel } from "../Models/ImageMetadata";
 import { ImageTypeModel } from "../Models/ImageTypes";
 import { ImageObjects } from "../Models/ImageObjects";
+import clearAllTimers = jest.clearAllTimers;
 
 const imageHandler = {
   getAll: (imageRepo: imageRepository) => {
@@ -68,61 +69,67 @@ const imageHandler = {
 
   saveImage: (imageRepo: imageRepository) => {
     return async (req: Request, res: Response) => {
-      if (!validationResult(req).isEmpty()) {
-        return res.status(301).send({
-          msg: `Invalid JSON format. Image must be a URL or base64 encoded. Label, if provided, must be a string.`,
-        });
-      }
-
-      const { image, label } = req.body;
-
-      let imageB64: string = imageHandler.isValidHttpUrl(image)
-        ? await imageHandler.downloadImage(image)
-        : image;
-
-      // 1) get the metadata of the image
-      const metaData = await imageHandler.getImageMetadata(imageB64);
-      const typeOfImage = metaData.find((x) => x.Name === "format")?.Value;
-      if (!typeOfImage) {
-        return res
-          .status(400)
-          .send({ msg: "Unable to determine the type of image this is." });
-      }
-
-      // 2) Get the objects of the image
-      const objects: ImageObjects[] = await imageRepo.discoverImageObjectsAsync(
-        {
-          imageB64,
+      try {
+        if (!validationResult(req).isEmpty()) {
+          return res.status(301).send({
+            msg: `Invalid JSON format. Image must be a URL or base64 encoded. Label, if provided, must be a string.`,
+          });
         }
-      );
-      if (objects.length === 0) {
-        return res.status(400).send({
-          msg: "Unable to determine the objects inside of the image.",
+
+        const { image, label } = req.body;
+
+        let imageB64: string = imageHandler.isValidHttpUrl(image)
+          ? await imageHandler.downloadImage(image)
+          : image;
+
+        // 1) get the metadata of the image
+        const metaData = await imageHandler.getImageMetadata(imageB64);
+        const typeOfImage = metaData.find((x) => x.Name === "format")?.Value;
+        if (!typeOfImage) {
+          return res
+            .status(400)
+            .send({ msg: "Unable to determine the type of image this is." });
+        }
+
+        // 2) Get the objects of the image
+        const objects: ImageObjects[] =
+          await imageRepo.discoverImageObjectsAsync({
+            imageB64,
+          });
+        if (objects.length === 0) {
+          return res.status(400).send({
+            msg: "Unable to determine the objects inside of the image.",
+          });
+        }
+
+        // 3) save image return the path
+        const path = await imageRepo.uploadImageAsync({
+          imageBuffer: imageB64,
         });
+        if (!path) {
+          return res.status(400).send({ msg: "error saving the image" });
+        }
+
+        // construct object to save to DB!
+        const imageType = { ...ImageTypeModel };
+        imageType.Value = typeOfImage;
+
+        const imageObj = { ...ImageModel };
+        imageObj.Type = imageType;
+        imageObj.Path = path;
+        imageObj.Objects = objects;
+        imageObj.Metadata = metaData;
+        imageObj.Label = label ?? "Default Label";
+
+        const savedImage: Image | null = await imageRepo.addAsync({
+          image: imageObj,
+        });
+
+        return res.status(200).send(savedImage);
+      } catch (e) {
+        console.log(e);
+        return res.status(400).send(e);
       }
-
-      // 3) save image return the path
-      const path = await imageRepo.uploadImageAsync({ imageBuffer: imageB64 });
-      if (!path) {
-        return res.status(400).send({ msg: "error saving the image" });
-      }
-
-      // construct object to save to DB!
-      const imageType = { ...ImageTypeModel };
-      imageType.Value = typeOfImage;
-
-      const imageObj = { ...ImageModel };
-      imageObj.Type = imageType;
-      imageObj.Path = path;
-      imageObj.Objects = objects;
-      imageObj.Metadata = metaData;
-      imageObj.Label = label ?? "Default Label";
-
-      const savedImage: Image | null = await imageRepo.addAsync({
-        image: imageObj,
-      });
-
-      return res.status(200).send(savedImage);
     };
   },
 
@@ -153,6 +160,7 @@ const imageHandler = {
     }
 
     const imageBuffer: Buffer = Buffer.from(imageB64, "base64");
+
     const metadata: sharp.Metadata = await sharp(imageBuffer).metadata();
 
     const imageMetadata: ImageMetadata[] = [];
