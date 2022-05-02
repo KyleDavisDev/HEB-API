@@ -7,8 +7,18 @@ export interface getByIdAsyncParams {
   id: number;
 }
 
+export interface getByIdsAsyncParams {
+  db?: Context;
+  ids: number[];
+}
+
 export interface getAllAsyncParams {
   db?: Context;
+}
+
+export interface getIdsByObjectParam {
+  db?: Context;
+  objects: string[];
 }
 
 export interface addAsyncParams {
@@ -28,7 +38,9 @@ export interface getImageObjectsParams {
 
 export interface imageRepository {
   getByIdAsync: (params: getByIdAsyncParams) => Promise<Image | null>;
+  getByIdsAsync: (params: getByIdsAsyncParams) => Promise<Image[]>;
   getAllAsync: (params: getAllAsyncParams) => Promise<Image[]>;
+  getIdsByObject: (params: getIdsByObjectParam) => Promise<number[]>;
   addAsync: (params: addAsyncParams) => Promise<Image | null>;
   uploadImageAsync: (params: saveImageParams) => Promise<string | null>;
   getImageObjects: (params: getImageObjectsParams) => Promise<ImageObjects[]>;
