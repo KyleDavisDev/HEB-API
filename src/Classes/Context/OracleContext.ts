@@ -1,4 +1,5 @@
 import { Context } from "./Context";
+import { ImageObjects } from "../../Models/ImageObjects";
 
 // Intentionally left bare.
 // Added to demonstrate the interfaces and singleton pattern
@@ -22,6 +23,10 @@ class OracleContext implements Context {
 
   uploadImageAsync(image: string): Promise<string | null> {
     return Promise.resolve(null);
+  }
+
+  getImageObjectsAsync(imageB64: string): Promise<ImageObjects[]> {
+    return Promise.resolve([]);
   }
 }
 

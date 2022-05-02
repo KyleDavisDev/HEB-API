@@ -3,6 +3,7 @@ require("dotenv").config({ path: "variables.env" });
 const { promisify } = require("util");
 
 import { Context } from "./Context";
+import { ImageObjects } from "../../Models/ImageObjects";
 
 class SqlContext implements Context {
   private static _instance: SqlContext;
@@ -71,6 +72,10 @@ class SqlContext implements Context {
 
   uploadImageAsync(image: string): Promise<string | null> {
     return Promise.resolve(null);
+  }
+
+  getImageObjectsAsync(imageB64: string): Promise<ImageObjects[]> {
+    return Promise.resolve([]);
   }
 }
 const temp = SqlContext.getInstance();

@@ -1,3 +1,5 @@
+import { ImageObjects } from "../../Models/ImageObjects";
+
 require("dotenv").config({ path: "variables.env" });
 import { Context } from "./Context";
 import { v2 as cloudinary } from "cloudinary"; // image hosting
@@ -36,6 +38,10 @@ class CloudinaryContext implements Context {
 
     return Promise.resolve(img.secure_url);
   };
+
+  getImageObjectsAsync(imageB64: string): Promise<ImageObjects[]> {
+    return Promise.resolve([]);
+  }
 }
 
 const temp = CloudinaryContext.getInstance();
