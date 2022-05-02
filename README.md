@@ -1,10 +1,12 @@
 # HEB-API
 Repo created for interview purposes w/ H-E-B.
 
-To run the application, first run ``npm install`` to download all npm packages and then run ``npm run start`` to start the server. Additionally, you will need to have the ``variables.env`` file in the root of your project for the expected connections to work.
+To run the application, first run ``npm install`` to download all npm packages and then run ``npm run start`` to start the server. Additionally, you will need to have the ``variables.env`` file in the root of your project for the expected connections to work. Application tested alongside Postman application.
+
+Run ``npm run test`` to run jest test suite.
 
 ## Overview
-Build a HTTP REST API in {**Java**|**Node.js**|**Python**} for a service that ingests user images, analyzes them for object detection, and returns the enhanced content. It should implement the following specification::
+Build a HTTP REST API in {**Java**|**Node.js**|**Python**} for a service that ingests user images, analyzes them for object detection, and returns the enhanced content. It should implement the following specification:
 
 API Specification
 
