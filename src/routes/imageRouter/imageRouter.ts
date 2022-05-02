@@ -1,7 +1,8 @@
 import express from "express";
-import { body, oneOf, param } from "express-validator";
+import { body, oneOf, param, query } from "express-validator";
 import { imageRepository } from "../../repositories/imageRepository/imageRepository";
 import { imageHandler } from "../../handlers/imageHandler";
+import * as path from "path";
 
 const imageRouter = (imageRepo: imageRepository) => {
   const router = express.Router();
@@ -10,7 +11,11 @@ const imageRouter = (imageRepo: imageRepository) => {
    *  @description Grab metadata about all available images
    *  @return JSON of image metadata
    */
-  router.get("/", imageHandler.getAll(imageRepo));
+  router.get(
+    "/",
+    query("objects").optional().isString(),
+    imageHandler.getAll(imageRepo)
+  );
 
   /** @route GET /images/:id
    *  @description Grab metadata about a specific image
