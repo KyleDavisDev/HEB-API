@@ -81,9 +81,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
                    SELECT Id, ImageId, Name, Value,	CreateDate,	IsActive  FROM ImageMetadata WHERE ImageId IN ? AND IsActive = 1;
                    SELECT Id, ImageId, Name, Confidence, CreateDate, IsActive FROM ImageObjects WHERE ImageId IN ? AND IsActive = 1;`;
 
-    const results = await db
-      .queryAsync(query, [[ids], [ids], [ids]])
-      .catch((x) => x);
+    const results = await db.queryAsync(query, [[ids], [ids], [ids]]);
     if (!results || results[0].length === 0) return [];
 
     // Piecing it all together!
@@ -140,9 +138,9 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     const results = await db.queryAsync(query, [[objects]]).catch((x) => x);
     if (!results) return [];
 
-    const Ids = results.map((row: any) => row.Id);
+    const ids = results.map((row: any) => row.Id);
 
-    return Promise.resolve(Ids);
+    return ids;
   },
 
   // insert record(s) in DB
@@ -207,7 +205,9 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     let { imageB64, db } = params;
     if (!db) db = ImaggaContext; // default context
 
-    const objectsArr: imageObject[] = await db.getImageObjectsAsync(imageB64);
+    const objectsArr: imageObject[] = await db.discoverImageObjectsAsync(
+      imageB64
+    );
 
     const objects = objectsArr.map((obj: imageObject) => {
       const object = { ...ImageObjectModel };
