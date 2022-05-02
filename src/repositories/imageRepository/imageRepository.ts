@@ -40,10 +40,10 @@ export interface imageRepository {
   getByIdAsync: (params: getByIdAsyncParams) => Promise<Image | null>;
   getByIdsAsync: (params: getByIdsAsyncParams) => Promise<Image[]>;
   getAllAsync: (params: getAllAsyncParams) => Promise<Image[]>;
-  getIdsByObject: (params: getIdsByObjectParam) => Promise<number[]>;
+  getIdsByObjectAsync: (params: getIdsByObjectParam) => Promise<number[]>;
   addAsync: (params: addAsyncParams) => Promise<Image | null>;
   uploadImageAsync: (params: saveImageParams) => Promise<string | null>;
-  discoverImageObjects: (
+  discoverImageObjectsAsync: (
     params: discoverImageObjectsParams
   ) => Promise<ImageObjects[]>;
 }

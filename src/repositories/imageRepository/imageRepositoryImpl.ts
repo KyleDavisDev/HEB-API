@@ -127,7 +127,9 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     return images;
   },
 
-  getIdsByObject: async (params: getIdsByObjectParam): Promise<number[]> => {
+  getIdsByObjectAsync: async (
+    params: getIdsByObjectParam
+  ): Promise<number[]> => {
     let { objects, db } = params;
     if (objects.length === 0) return [];
     if (!db) db = SqlContext; // default context
@@ -199,7 +201,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     return path;
   },
 
-  discoverImageObjects: async (
+  discoverImageObjectsAsync: async (
     params: discoverImageObjectsParams
   ): Promise<ImageObjects[]> => {
     let { imageB64, db } = params;

@@ -16,21 +16,23 @@ describe("/images", () => {
   const nullPromise = Promise.resolve(null);
   const emptyArrPromise = Promise.resolve([]);
 
-  let getAllAsyncMock: Promise<Image[]> = emptyArrPromise;
   let getByIdAsyncMock: Promise<Image | null> = nullPromise;
+  let getByIdsAsyncMock: Promise<Image[]> = emptyArrPromise;
+  let getAllAsyncMock: Promise<Image[]> = emptyArrPromise;
+  let getIdsByObjectAsync: Promise<number[]> = emptyArrPromise;
   let addAsyncMock: Promise<Image | null> = nullPromise;
   let uploadImageAsyncMock: Promise<string | null> = nullPromise;
-  let getImageObjectsMock: Promise<ImageObjects[]> = emptyArrPromise;
+  let discoverImageObjectsMock: Promise<ImageObjects[]> = emptyArrPromise;
 
   beforeAll(() => {
     const imageRepositoryImpl: imageRepository = {
       getByIdAsync: () => getByIdAsyncMock,
-      getByIdsAsync: () => Promise.resolve([]),
+      getByIdsAsync: () => getByIdsAsyncMock,
       getAllAsync: () => getAllAsyncMock,
-      getIdsByObject: () => Promise.resolve([]),
+      getIdsByObjectAsync: () => getIdsByObjectAsync,
       addAsync: () => addAsyncMock,
       uploadImageAsync: () => uploadImageAsyncMock,
-      discoverImageObjects: () => getImageObjectsMock,
+      discoverImageObjectsAsync: () => discoverImageObjectsMock,
     };
     const app = serverSetup({ imageRepository: imageRepositoryImpl });
     request = supertest.agent(app);
@@ -42,7 +44,7 @@ describe("/images", () => {
     addAsyncMock = nullPromise;
     getAllAsyncMock = emptyArrPromise;
     uploadImageAsyncMock = nullPromise;
-    getImageObjectsMock = emptyArrPromise;
+    discoverImageObjectsMock = emptyArrPromise;
   });
 
   describe("@GET /", () => {
@@ -204,7 +206,7 @@ describe("/images", () => {
       const image = _imageBuilder.AFullRandomImage().Build();
       const imageObject = _imageObjectBuilder.Random().Build();
       const imagePath = image.Path;
-      getImageObjectsMock = Promise.resolve([imageObject]);
+      discoverImageObjectsMock = Promise.resolve([imageObject]);
       addAsyncMock = Promise.resolve(image);
       uploadImageAsyncMock = Promise.resolve(imagePath);
 
