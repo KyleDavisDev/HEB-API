@@ -1,5 +1,4 @@
-import { Context } from "./Context";
-import { ImageObjects } from "../../Models/ImageObjects";
+import { Context, imageObject } from "./Context";
 
 // Intentionally left bare.
 // Added to demonstrate the interfaces and singleton pattern
@@ -25,9 +24,9 @@ class OracleContext implements Context {
     return Promise.resolve(null);
   }
 
-  getImageObjectsAsync(imageB64: string): Promise<ImageObjects[]> {
-    return Promise.resolve([]);
-  }
+  getImageObjectsAsync = (imageB64: string): Promise<imageObject[]> =>
+    Promise.resolve([]);
 }
 
-module.exports = OracleContext.getInstance();
+const temp = OracleContext.getInstance();
+export { temp as OracleContext };

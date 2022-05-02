@@ -2,8 +2,7 @@ import mysql from "mysql";
 require("dotenv").config({ path: "variables.env" });
 const { promisify } = require("util");
 
-import { Context } from "./Context";
-import { ImageObjects } from "../../Models/ImageObjects";
+import { Context, imageObject } from "./Context";
 
 class SqlContext implements Context {
   private static _instance: SqlContext;
@@ -74,9 +73,8 @@ class SqlContext implements Context {
     return Promise.resolve(null);
   }
 
-  getImageObjectsAsync(imageB64: string): Promise<ImageObjects[]> {
-    return Promise.resolve([]);
-  }
+  getImageObjectsAsync = (imageB64: string): Promise<imageObject[]> =>
+    Promise.resolve([]);
 }
 const temp = SqlContext.getInstance();
 export { temp as SqlContext };
