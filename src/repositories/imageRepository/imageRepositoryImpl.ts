@@ -145,7 +145,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
 
   // insert record(s) in DB
   addAsync: async (params: addAsyncParams): Promise<Image | null> => {
-    // TODO: it'd be nice to have this method use a transaction but not enough time
+    // TODO: it'd be nice to have this method use a transaction
     let { image, db } = params;
     if (!db) db = SqlContext; // default context
 
