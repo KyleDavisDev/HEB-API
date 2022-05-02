@@ -1,7 +1,7 @@
 import { Image } from "../../Models/Image";
 import { SqlContext } from "../../Classes/Context/SqlContext";
 import { ImageMetadata } from "../../Models/ImageMetadata";
-import { ImageObjects } from "../../Models/ImageObjects";
+import { ImageObjectModel, ImageObjects } from "../../Models/ImageObjects";
 import { ImageTypes } from "../../Models/ImageTypes";
 import { CloudinaryContext } from "../../Classes/Context/CloudinaryContext";
 import {
@@ -10,11 +10,12 @@ import {
   getByIdAsyncParams,
   getByIdsAsyncParams,
   getIdsByObjectParam,
-  getImageObjectsParams,
+  discoverImageObjectsParams,
   imageRepository,
   saveImageParams,
 } from "./imageRepository";
 import { ImaggaContext } from "../../Classes/Context/ImaggaContext";
+import { imageObject } from "../../Classes/Context/Context";
 
 interface imageMetaSet {
   [key: number]: ImageMetadata[];
@@ -82,6 +83,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     const results = await db
       .queryAsync(query, [[ids], [ids], [ids]])
       .catch((x) => x);
+    console.log(results);
     if (!results || results[0].length === 0) return [];
 
     // Piecing it all together!
@@ -197,13 +199,21 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     return path;
   },
 
-  getImageObjects: async (
-    params: getImageObjectsParams
+  discoverImageObjects: async (
+    params: discoverImageObjectsParams
   ): Promise<ImageObjects[]> => {
     let { imageB64, db } = params;
     if (!db) db = ImaggaContext; // default context
 
-    const objects: ImageObjects[] = await db.getImageObjectsAsync(imageB64);
+    const objectsArr: imageObject[] = await db.getImageObjectsAsync(imageB64);
+
+    const objects = objectsArr.map((obj: imageObject) => {
+      const object = { ...ImageObjectModel };
+      object.Name = obj.name;
+      object.Confidence = obj.value;
+
+      return object;
+    });
 
     return objects;
   },
