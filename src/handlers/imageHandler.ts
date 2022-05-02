@@ -29,7 +29,7 @@ const imageHandler = {
 
       const image = await imageRepo.getByIdAsync({ id: imageId });
       if (!image) {
-        return res.status(301).send({ msg: `No image found for ${id}` });
+        return res.status(301).send({ msg: `No image found for id of ${id}` });
       }
 
       return res.status(200).send(image);
