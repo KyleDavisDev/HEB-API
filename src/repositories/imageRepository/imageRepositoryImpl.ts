@@ -68,6 +68,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
 
   getByIdsAsync: async (params: getByIdsAsyncParams): Promise<Image[]> => {
     let { ids, db } = params;
+    if (ids.length === 0) return [];
     if (!db) db = SqlContext; // default context
 
     const query = `SELECT Images.Id as 'Images.Id', Images.TypeId as 'Images.TypeId', Images.Label as 'Images.Label',
@@ -83,7 +84,6 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     const results = await db
       .queryAsync(query, [[ids], [ids], [ids]])
       .catch((x) => x);
-    console.log(results);
     if (!results || results[0].length === 0) return [];
 
     // Piecing it all together!
