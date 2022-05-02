@@ -27,7 +27,7 @@ const imageHandler = {
         const objects = queryObjects.replace(/"/g, "").split(",");
 
         // grab the images Ids that contain that object
-        const ids = await imageRepo.getIdsByObject({
+        const ids = await imageRepo.getIdsByObjectAsync({
           objects: objects,
         });
         if (ids.length === 0) {
@@ -90,9 +90,11 @@ const imageHandler = {
       }
 
       // 2) Get the objects of the image
-      const objects: ImageObjects[] = await imageRepo.discoverImageObjects({
-        imageB64,
-      });
+      const objects: ImageObjects[] = await imageRepo.discoverImageObjectsAsync(
+        {
+          imageB64,
+        }
+      );
       if (objects.length === 0) {
         return res.status(400).send({
           msg: "Unable to determine the objects inside of the image.",
