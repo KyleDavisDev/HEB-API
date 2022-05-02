@@ -147,8 +147,9 @@ const imageHandler = {
 
   getImageMetadata: async (imageB64: string): Promise<ImageMetadata[]> => {
     // Quick sanity check -- sharp package expects param in very specific fashion
-    if (imageB64.includes("data:image/jpeg;base64,")) {
-      imageB64 = imageB64.replace("data:image/jpeg;base64,", "");
+    if (imageB64.includes(";base64,")) {
+      const startIndex = imageB64.indexOf(";base64,") + ";base64,".length;
+      imageB64 = imageB64.substring(startIndex);
     }
 
     const imageBuffer: Buffer = Buffer.from(imageB64, "base64");
