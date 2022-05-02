@@ -23,7 +23,9 @@ class ImaggaContext implements Context {
     return Promise.resolve(null);
   };
 
-  getImageObjectsAsync = async (imageB64: string): Promise<imageObject[]> => {
+  discoverImageObjectsAsync = async (
+    imageB64: string
+  ): Promise<imageObject[]> => {
     const imageObjects: imageObject[] = [];
 
     try {

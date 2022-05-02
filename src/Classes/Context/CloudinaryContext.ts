@@ -37,7 +37,7 @@ class CloudinaryContext implements Context {
     return Promise.resolve(img.secure_url);
   };
 
-  getImageObjectsAsync(imageB64: string): Promise<imageObject[]> {
+  discoverImageObjectsAsync(imageB64: string): Promise<imageObject[]> {
     return Promise.resolve([]);
   }
 }

@@ -24,7 +24,7 @@ class OracleContext implements Context {
     return Promise.resolve(null);
   }
 
-  getImageObjectsAsync = (imageB64: string): Promise<imageObject[]> =>
+  discoverImageObjectsAsync = (imageB64: string): Promise<imageObject[]> =>
     Promise.resolve([]);
 }
 
