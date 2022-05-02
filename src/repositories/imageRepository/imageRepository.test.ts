@@ -79,6 +79,83 @@ describe("ImageRepository", () => {
     });
   });
 
+  describe("getByIdsAsync", () => {
+    it("should return empty set on empty ids list", async () => {
+      // Given
+      const db: Context = createMock<Context>();
+      const sut = imageRepositoryImpl;
+      const ids: number[] = [];
+
+      // When
+      const result = await sut.getByIdsAsync({ db, ids });
+
+      // Then
+      expect(result).toHaveLength(0);
+    });
+
+    it("should return images that have an id within the list", async () => {
+      // Given
+      const fakeImages = [
+        _imageBuilder.ANewImage().AnImageFromDB(),
+        _imageBuilder.ANewImage().AnImageFromDB(),
+      ];
+      const fakeTypes = [
+        _typeBuilder.AnImageFromDB(),
+        _typeBuilder.AnImageFromDB(),
+      ];
+      const fakeMetadata = [
+        _metaDataBuilder
+          .Random()
+          .WithImageIdOf(fakeImages[0]["Images.Id"])
+          .Build(),
+        _metaDataBuilder
+          .Random()
+          .WithImageIdOf(fakeImages[0]["Images.Id"])
+          .Build(),
+        _metaDataBuilder
+          .Random()
+          .WithImageIdOf(fakeImages[1]["Images.Id"])
+          .Build(),
+      ];
+      const fakeObjects = [
+        _objectBuilder
+          .Random()
+          .WithImageIdOf(fakeImages[0]["Images.Id"])
+          .Build(),
+        _objectBuilder
+          .Random()
+          .WithImageIdOf(fakeImages[1]["Images.Id"])
+          .Build(),
+        _objectBuilder
+          .Random()
+          .WithImageIdOf(fakeImages[1]["Images.Id"])
+          .Build(),
+      ];
+      const ids: number[] = [
+        fakeImages[0]["Images.Id"],
+        fakeImages[1]["Images.Id"],
+      ];
+      const db: Context = createMock<Context>({
+        queryAsync: () =>
+          Promise.resolve([
+            [
+              { ...fakeImages[0], ...fakeTypes[0] },
+              { ...fakeImages[1], ...fakeTypes[1] },
+            ],
+            [fakeMetadata],
+            [fakeObjects],
+          ]),
+      });
+      const sut = imageRepositoryImpl;
+
+      // When
+      const result = await sut.getByIdsAsync({ db, ids });
+
+      // Then
+      expect(result.length).toBe(2);
+    });
+  });
+
   describe("getAllAsync", () => {
     it("should return empty set when no images are found", async () => {
       // Given
