@@ -3,25 +3,32 @@ import { imageRepository } from "../../repositories/imageRepository/imageReposit
 import { Image } from "../../Models/Image";
 import { ImageBuilder } from "../../Models/Builders/ImageBuilder";
 import { serverSetup } from "../../serverSetup/serverSetup";
+import { ImageObjects } from "../../Models/ImageObjects";
+import { ImageObjectBuilder } from "../../Models/Builders/ImageObjectBuilder";
 
 describe("/images", () => {
   jest.setTimeout(40000); // increase timeout
+  const _imageBuilder = new ImageBuilder();
+  const _imageObjectBuilder = new ImageObjectBuilder();
   const basePath = `/`;
   const route = "images";
   let request: SuperAgentTest;
   const nullPromise = Promise.resolve(null);
   const emptyArrPromise = Promise.resolve([]);
+
+  let getAllAsyncMock: Promise<Image[]> = emptyArrPromise;
   let getByIdAsyncMock: Promise<Image | null> = nullPromise;
   let addAsyncMock: Promise<Image | null> = nullPromise;
-  let getAllAsyncMock: Promise<Image[]> = emptyArrPromise;
-  let saveImageAsyncMock: Promise<string | null> = nullPromise;
+  let uploadImageAsyncMock: Promise<string | null> = nullPromise;
+  let getImageObjectsMock: Promise<ImageObjects[]> = emptyArrPromise;
 
   beforeAll(() => {
     const imageRepositoryImpl: imageRepository = {
       getAllAsync: () => getAllAsyncMock,
       getByIdAsync: () => getByIdAsyncMock,
       addAsync: () => addAsyncMock,
-      uploadImageAsync: () => saveImageAsyncMock,
+      uploadImageAsync: () => uploadImageAsyncMock,
+      getImageObjects: () => getImageObjectsMock,
     };
     const app = serverSetup({ imageRepository: imageRepositoryImpl });
     request = supertest.agent(app);
@@ -32,7 +39,8 @@ describe("/images", () => {
     getByIdAsyncMock = nullPromise;
     addAsyncMock = nullPromise;
     getAllAsyncMock = emptyArrPromise;
-    saveImageAsyncMock = nullPromise;
+    uploadImageAsyncMock = nullPromise;
+    getImageObjectsMock = emptyArrPromise;
   });
 
   describe("@GET /", () => {
@@ -91,7 +99,7 @@ describe("/images", () => {
       //Given
       const id = 5;
       const status = 200;
-      const image = new ImageBuilder().AFullRandomImage().Build();
+      const image = _imageBuilder.AFullRandomImage().Build();
       getByIdAsyncMock = Promise.resolve(image);
 
       //When
@@ -104,7 +112,7 @@ describe("/images", () => {
     it("should return an image when found", async () => {
       //Given
       const id = 5;
-      const image = new ImageBuilder().AFullRandomImage().Build();
+      const image = _imageBuilder.AFullRandomImage().Build();
       getByIdAsyncMock = Promise.resolve(image);
 
       //When
@@ -188,10 +196,15 @@ describe("/images", () => {
 
     it("should return complete image on success", async () => {
       // Given
-      const status = 301;
-      const imageLink =
-        "https://res.cloudinary.com/foryourthoughts/image/upload/q_auto,w_434,h_651/v1635714597/sauces/itre15r8ste8ecidi3t4.jpg";
+      const status = 200;
+      const imageLink = "https://i.imgur.com/oXfdu50.jpeg";
       const label = "test label";
+      const image = _imageBuilder.AFullRandomImage().Build();
+      const imageObject = _imageObjectBuilder.Random().Build();
+      const imagePath = image.Path;
+      getImageObjectsMock = Promise.resolve([imageObject]);
+      addAsyncMock = Promise.resolve(image);
+      uploadImageAsyncMock = Promise.resolve(imagePath);
 
       //When
       const result = await request
@@ -201,6 +214,7 @@ describe("/images", () => {
 
       //Then
       expect(result.statusCode).toEqual(status);
+      expect(result.body).toEqual(image);
     });
   });
 });
