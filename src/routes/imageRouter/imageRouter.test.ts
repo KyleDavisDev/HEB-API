@@ -5,6 +5,7 @@ import { ImageBuilder } from "../../Models/Builders/ImageBuilder";
 import { serverSetup } from "../../serverSetup/serverSetup";
 import { ImageObjects } from "../../Models/ImageObjects";
 import { ImageObjectBuilder } from "../../Models/Builders/ImageObjectBuilder";
+import { testImageB64 } from "./testImageB64";
 
 describe("/images", () => {
   jest.setTimeout(40000); // increase timeout
@@ -264,7 +265,7 @@ describe("/images", () => {
       }
     });
 
-    it("should return complete image on success", async () => {
+    it("should accept image url and return complete image on success", async () => {
       // Given
       const status = 200;
       const imageLink = "https://i.imgur.com/oXfdu50.jpeg";
@@ -280,6 +281,29 @@ describe("/images", () => {
       const result = await request
         .post(`${basePath}`)
         .send({ image: imageLink, label })
+        .set("Accept", "application/json");
+
+      //Then
+      expect(result.statusCode).toEqual(status);
+      expect(result.body).toEqual(image);
+    });
+
+    it("should accept image base64 and return complete image on success", async () => {
+      // Given
+      const status = 200;
+      const imageB64 = testImageB64;
+      const label = "test label";
+      const image = _imageBuilder.AFullRandomImage().Build();
+      const imageObject = _imageObjectBuilder.Random().Build();
+      const imagePath = image.Path;
+      discoverImageObjectsMock = Promise.resolve([imageObject]);
+      addAsyncMock = Promise.resolve(image);
+      uploadImageAsyncMock = Promise.resolve(imagePath);
+
+      //When
+      const result = await request
+        .post(`${basePath}`)
+        .send({ image: imageB64, label })
         .set("Accept", "application/json");
 
       //Then
