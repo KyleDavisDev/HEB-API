@@ -11,7 +11,26 @@ import { ImageObjects } from "../Models/ImageObjects";
 const imageHandler = {
   getAll: (imageRepo: imageRepository) => {
     return async (req: Request, res: Response) => {
-      const images: Image[] = await imageRepo.getAllAsync({});
+      if (!validationResult(req).isEmpty()) {
+        res.status(301).end();
+        return;
+      }
+      const { objects } = req.query;
+      let images: Image[] = [];
+      if (objects && typeof objects === "string") {
+        // do a  bit of massaging to get in right format
+        const objs = objects.replace(/"/g, "").split(",");
+
+        // grab the images Ids that contain that object
+        const ids = await imageRepo.getIdsByObject({
+          objects: objs,
+        });
+
+        // turn Ids into images!
+        images = await imageRepo.getByIdsAsync({ ids });
+      } else {
+        images = await imageRepo.getAllAsync({});
+      }
 
       return res.status(200).send(images);
     };
