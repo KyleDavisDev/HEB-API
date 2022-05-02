@@ -8,12 +8,7 @@ interface serverParams {
 
 const serverSetup = (params: serverParams) => {
   const app = express();
-  app.use(express.static("public"));
   app.use(express.json());
-
-  app.get("/", async (req: Request, res: Response) => {
-    res.status(200).send("success");
-  });
 
   app.use("/images", imageRouter(params.imageRepository));
 
