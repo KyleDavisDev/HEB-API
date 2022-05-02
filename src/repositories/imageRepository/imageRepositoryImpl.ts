@@ -8,9 +8,11 @@ import {
   addAsyncParams,
   getAllAsyncParams,
   getByIdAsyncParams,
+  getImageObjectsParams,
   imageRepository,
   saveImageParams,
 } from "./imageRepository";
+import { ImaggaContext } from "../../Classes/Context/ImaggaContext";
 
 const imageRepositoryImpl: imageRepository = {
   getByIdAsync: async (params: getByIdAsyncParams): Promise<Image | null> => {
@@ -130,7 +132,7 @@ const imageRepositoryImpl: imageRepository = {
       images.push(image);
     });
 
-    return Promise.resolve(images);
+    return images;
   },
 
   // insert record(s) in DB
@@ -142,13 +144,9 @@ const imageRepositoryImpl: imageRepository = {
     // 1) Start off with saving the image
     const insertImageQuery = `INSERT INTO Images(TypeId, Label, Path, CreateDate, IsActive)
                    VALUES ((SELECT Id FROM ImageTypes WHERE Value = ? AND IsActive = 1 LIMIT 1), ?, ?, now(), true);`;
-
-    const insertedImageRow = await db.queryAsync(insertImageQuery, [
-      image.Type.Value,
-      image.Label,
-      image.Path,
-    ]);
-    if (!insertedImageRow) return Promise.resolve(null);
+    const args = [image.Type.Value, image.Label, image.Path];
+    const insertedImageRow = await db.queryAsync(insertImageQuery, args);
+    if (!insertedImageRow) return null; // get out
     image.Id = insertedImageRow.insertId;
 
     // 2) Then save the metadata
@@ -161,7 +159,7 @@ const imageRepositoryImpl: imageRepository = {
     });
 
     const insertedMetadatas = await db.queryAsync(insertMetaQuery, metaParams);
-    if (!insertedMetadatas) return Promise.resolve(null);
+    if (!insertedMetadatas) return null; // get out
 
     // 3) Lastly, save the objects
     let insertObjectsQuery = "";
@@ -176,11 +174,11 @@ const imageRepositoryImpl: imageRepository = {
       insertObjectsQuery,
       objectParams
     );
-    if (!insertedObjects) return Promise.resolve(null);
+    if (!insertedObjects) return null;
 
     const savedImage = await imageRepositoryImpl.getByIdAsync({ id: image.Id });
 
-    return Promise.resolve(savedImage);
+    return savedImage;
   },
 
   uploadImageAsync: async (params: saveImageParams): Promise<string | null> => {
@@ -188,9 +186,20 @@ const imageRepositoryImpl: imageRepository = {
     if (!db) db = CloudinaryContext; // default context
 
     const path = await db.uploadImageAsync(imageBuffer);
-    if (!path) return Promise.resolve(null);
+    if (!path) return null;
 
-    return Promise.resolve(path);
+    return path;
+  },
+
+  getImageObjects: async (
+    params: getImageObjectsParams
+  ): Promise<ImageObjects[]> => {
+    let { imageB64, db } = params;
+    if (!db) db = ImaggaContext; // default context
+
+    const objects: ImageObjects[] = await db.getImageObjectsAsync(imageB64);
+
+    return objects;
   },
 };
 
