@@ -130,6 +130,82 @@ describe("ImageRepository", () => {
     });
   });
 
+  describe("addAsync", () => {
+    it("should return null if couldn't save image record", async () => {
+      // Given
+      const image = _imageBuilder.ANewImage().AFullRandomImage().Build();
+      const db: Context = createMock<Context>({
+        queryAsync: () => Promise.resolve(null),
+      });
+      const sut = imageRepositoryImpl;
+
+      // When
+      const result = await sut.addAsync({ db, image });
+
+      // Then
+      expect(result).toBeNull();
+    });
+
+    it("should return null if couldn't insert metadata", async () => {
+      // Given
+      const image = _imageBuilder.ANewImage().AFullRandomImage().Build();
+      const db: Context = createMock<Context>({
+        queryAsync: jest
+          .fn()
+          .mockReturnValueOnce(Promise.resolve({ inserted_id: 1 }))
+          .mockReturnValueOnce(Promise.resolve(null)),
+      });
+      const sut = imageRepositoryImpl;
+      // sut.getByIdAsync = () => Promise.resolve(image);
+
+      // When
+      const result = await sut.addAsync({ db, image });
+
+      // Then
+      expect(result).toBeNull();
+    });
+
+    it("should return null if couldn't insert objects", async () => {
+      // Given
+      const image = _imageBuilder.ANewImage().AFullRandomImage().Build();
+      const db: Context = createMock<Context>({
+        queryAsync: jest
+          .fn()
+          .mockReturnValueOnce(Promise.resolve({ inserted_id: 1 }))
+          .mockReturnValueOnce(Promise.resolve(true))
+          .mockReturnValueOnce(Promise.resolve(null)),
+      });
+      const sut = imageRepositoryImpl;
+      // sut.getByIdAsync = () => Promise.resolve(image);
+
+      // When
+      const result = await sut.addAsync({ db, image });
+
+      // Then
+      expect(result).toBeNull();
+    });
+
+    it("should return full image on success", async () => {
+      // Given
+      const image = _imageBuilder.ANewImage().AFullRandomImage().Build();
+      const db: Context = createMock<Context>({
+        queryAsync: jest
+          .fn()
+          .mockReturnValueOnce(Promise.resolve({ inserted_id: 1 }))
+          .mockReturnValueOnce(Promise.resolve(true))
+          .mockReturnValueOnce(Promise.resolve(true)),
+      });
+      const sut = imageRepositoryImpl;
+      sut.getByIdAsync = () => Promise.resolve(image);
+
+      // When
+      const result = await sut.addAsync({ db, image });
+
+      // Then
+      expect(result).toEqual(image);
+    });
+  });
+
   describe("uploadImageAsync", () => {
     it("should return false on save error", async () => {
       // Given
