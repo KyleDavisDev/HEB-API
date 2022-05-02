@@ -16,7 +16,25 @@ import {
 } from "./imageRepository";
 import { ImaggaContext } from "../../Classes/Context/ImaggaContext";
 
-const imageRepositoryImpl: imageRepository = {
+interface imageMetaSet {
+  [key: number]: ImageMetadata[];
+}
+interface imageObjectsSet {
+  [key: number]: ImageObjects[];
+}
+interface extraImagesParams {
+  rows: any;
+  imageMetas: imageMetaSet;
+  imageObjects: imageObjectsSet;
+}
+
+interface imageRepositoryImpl extends imageRepository {
+  extractMetadata: (rows: any) => imageMetaSet;
+  extractImageObjects: (rows: any) => imageObjectsSet;
+  extractImages: (params: extraImagesParams) => Image[];
+}
+
+const imageRepositoryImpl: imageRepositoryImpl = {
   getByIdAsync: async (params: getByIdAsyncParams): Promise<Image | null> => {
     let { id, db } = params;
     if (id < 1) return null;
@@ -36,36 +54,15 @@ const imageRepositoryImpl: imageRepository = {
     if (!results || results[0].length === 0) return null;
 
     // Piecing it all together!
-    const metaData: ImageMetadata[] = [];
-    results[1].forEach((data: ImageMetadata) => {
-      metaData.push(data);
+    const imageMetas = imageRepositoryImpl.extractMetadata(results[1]);
+    const imageObjects = imageRepositoryImpl.extractImageObjects(results[2]);
+    const images: Image[] = imageRepositoryImpl.extractImages({
+      rows: results[0],
+      imageMetas,
+      imageObjects,
     });
 
-    const imageObjects: ImageObjects[] = [];
-    results[2].forEach((obj: ImageObjects) => {
-      imageObjects.push(obj);
-    });
-
-    const imageRow = results[0][0];
-    const imageType: ImageTypes = {
-      CreateDate: imageRow["ImageTypes.CreateDate"],
-      Id: imageRow["ImageTypes.Id"],
-      IsActive: imageRow["ImageTypes.IsActive"],
-      Value: imageRow["ImageTypes.Value"],
-    };
-
-    const image: Image = {
-      Id: imageRow["Images.Id"],
-      CreateDate: parseInt(imageRow["Images.CreateDate"], 10),
-      IsActive: imageRow["Images.IsActive"] === 1,
-      Label: imageRow["Images.Label"],
-      Path: imageRow["Images.Path"],
-      Type: imageType,
-      Metadata: metaData,
-      Objects: imageObjects,
-    };
-
-    return image;
+    return images[0];
   },
 
   getByIdsAsync: async (params: getByIdsAsyncParams): Promise<Image[]> => {
@@ -88,52 +85,12 @@ const imageRepositoryImpl: imageRepository = {
     if (!results || results[0].length === 0) return [];
 
     // Piecing it all together!
-    // The tradeoff of having such a normalized DB is that now we have to put more effort into piecing everything together
-    const metaData: { [key: number]: ImageMetadata[] } = {};
-    results[1].forEach((data: ImageMetadata) => {
-      const key = data.ImageId;
-
-      // initialize array at key if we don't already have something there
-      if (!metaData[key]) {
-        metaData[key] = [];
-      }
-
-      metaData[key].push(data);
-    });
-
-    const imageObjects: { [key: number]: ImageObjects[] } = [];
-    results[2].forEach((obj: ImageObjects) => {
-      const key = obj.ImageId;
-
-      // initialize array at key if we don't already have something there
-      if (!imageObjects[key]) {
-        imageObjects[key] = [];
-      }
-
-      imageObjects[key].push(obj);
-    });
-
-    const images: Image[] = [];
-    results[0].forEach((row: any) => {
-      const type: ImageTypes = {
-        CreateDate: row["ImageTypes.CreateDate"],
-        Id: row["ImageTypes.Id"],
-        IsActive: row["ImageTypes.IsActive"],
-        Value: row["ImageTypes.Value"],
-      };
-
-      const image: Image = {
-        CreateDate: row["Images.CreateDate"],
-        Id: row["Images.Id"],
-        IsActive: row["Images.IsActive"],
-        Label: row["Images.Label"],
-        Path: row["Images.Path"],
-        Type: type,
-        Metadata: metaData[row["Images.Id"]],
-        Objects: imageObjects[row["Images.Id"]],
-      };
-
-      images.push(image);
+    const imageMetas = imageRepositoryImpl.extractMetadata(results[1]);
+    const imageObjects = imageRepositoryImpl.extractImageObjects(results[2]);
+    const images: Image[] = imageRepositoryImpl.extractImages({
+      rows: results[0],
+      imageMetas,
+      imageObjects,
     });
 
     return images;
@@ -157,52 +114,12 @@ const imageRepositoryImpl: imageRepository = {
     if (!results) return Promise.resolve([]);
 
     // Piecing it all together!
-    // The tradeoff of having such a normalized DB is that now we have to put more effort into piecing everything together
-    const metaData: { [key: number]: ImageMetadata[] } = {};
-    results[1].forEach((data: ImageMetadata) => {
-      const key = data.ImageId;
-
-      // initialize array at key if we don't already have something there
-      if (!metaData[key]) {
-        metaData[key] = [];
-      }
-
-      metaData[key].push(data);
-    });
-
-    const imageObjects: { [key: number]: ImageObjects[] } = [];
-    results[2].forEach((obj: ImageObjects) => {
-      const key = obj.ImageId;
-
-      // initialize array at key if we don't already have something there
-      if (!imageObjects[key]) {
-        imageObjects[key] = [];
-      }
-
-      imageObjects[key].push(obj);
-    });
-
-    const images: Image[] = [];
-    results[0].forEach((row: any) => {
-      const type: ImageTypes = {
-        CreateDate: row["ImageTypes.CreateDate"],
-        Id: row["ImageTypes.Id"],
-        IsActive: row["ImageTypes.IsActive"],
-        Value: row["ImageTypes.Value"],
-      };
-
-      const image: Image = {
-        CreateDate: row["Images.CreateDate"],
-        Id: row["Images.Id"],
-        IsActive: row["Images.IsActive"],
-        Label: row["Images.Label"],
-        Path: row["Images.Path"],
-        Type: type,
-        Metadata: metaData[row["Images.Id"]],
-        Objects: imageObjects[row["Images.Id"]],
-      };
-
-      images.push(image);
+    const imageMetas = imageRepositoryImpl.extractMetadata(results[1]);
+    const imageObjects = imageRepositoryImpl.extractImageObjects(results[2]);
+    const images: Image[] = imageRepositoryImpl.extractImages({
+      rows: results[0],
+      imageMetas,
+      imageObjects,
     });
 
     return images;
@@ -289,6 +206,70 @@ const imageRepositoryImpl: imageRepository = {
     const objects: ImageObjects[] = await db.getImageObjectsAsync(imageB64);
 
     return objects;
+  },
+
+  extractMetadata: (rows: any): { [key: number]: ImageMetadata[] } => {
+    const result: { [key: number]: ImageMetadata[] } = {};
+
+    rows.forEach((data: ImageMetadata) => {
+      const key = data.ImageId;
+
+      // initialize array at key if we don't already have something there
+      if (!result[key]) {
+        result[key] = [];
+      }
+
+      result[key].push(data);
+    });
+
+    return result;
+  },
+
+  extractImageObjects: (rows: any): { [key: number]: ImageObjects[] } => {
+    const result: { [key: number]: ImageObjects[] } = {};
+
+    rows.forEach((obj: ImageObjects) => {
+      const key = obj.ImageId;
+
+      // initialize array at key if we don't already have something there
+      if (!result[key]) {
+        result[key] = [];
+      }
+
+      result[key].push(obj);
+    });
+
+    return result;
+  },
+
+  extractImages: (params: extraImagesParams): Image[] => {
+    const result: Image[] = [];
+
+    const { rows, imageMetas, imageObjects } = params;
+
+    rows.forEach((row: any) => {
+      const type: ImageTypes = {
+        CreateDate: row["ImageTypes.CreateDate"],
+        Id: row["ImageTypes.Id"],
+        IsActive: row["ImageTypes.IsActive"],
+        Value: row["ImageTypes.Value"],
+      };
+
+      const image: Image = {
+        CreateDate: row["Images.CreateDate"],
+        Id: row["Images.Id"],
+        IsActive: row["Images.IsActive"],
+        Label: row["Images.Label"],
+        Path: row["Images.Path"],
+        Type: type,
+        Metadata: imageMetas[row["Images.Id"]],
+        Objects: imageObjects[row["Images.Id"]],
+      };
+
+      result.push(image);
+    });
+
+    return result;
   },
 };
 
