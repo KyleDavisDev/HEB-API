@@ -13,7 +13,7 @@ const imageHandler = {
     return async (req: Request, res: Response) => {
       if (!validationResult(req).isEmpty()) {
         return res.status(301).send({
-          msg: `Invalid objects format. Objects must be a string and values separated by a comma. Ex: "dog" or "dog,cat".`,
+          msg: `Invalid objects format. Objects must be a string and values separated by a comma. Ex: 'dog' or 'dog,cat'.`,
         });
       }
 
