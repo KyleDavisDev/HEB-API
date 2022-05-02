@@ -207,6 +207,38 @@ describe("ImageRepository", () => {
     });
   });
 
+  describe("getIdsByObjectAsync", () => {
+    it("should return empty set on empty objects list", async () => {
+      // Given
+      const db: Context = createMock<Context>();
+      const sut = imageRepositoryImpl;
+      const objects: string[] = [];
+
+      // When
+      const result = await sut.getIdsByObjectAsync({ db, objects });
+
+      // Then
+      expect(result).toHaveLength(0);
+    });
+
+    it("should return list of ids that have the object in them", async () => {
+      // Given
+      const objects = ["dog", "cat"];
+      const returnedObjs = [{ Id: 1 }, { Id: 2 }, { Id: 3 }];
+      const returnedIds = returnedObjs.map((x) => x.Id);
+      const db: Context = createMock<Context>({
+        queryAsync: () => Promise.resolve(returnedObjs),
+      });
+      const sut = imageRepositoryImpl;
+
+      // When
+      const result = await sut.getIdsByObjectAsync({ db, objects });
+
+      // Then
+      expect(result).toEqual(returnedIds);
+    });
+  });
+
   describe("addAsync", () => {
     it("should return null if couldn't save image record", async () => {
       // Given
