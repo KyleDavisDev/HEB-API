@@ -32,7 +32,7 @@ class ImaggaContext implements Context {
       const authorization = `Basic ${process.env.IMAGGA_AUTHORIZATION}`;
       const responseUpload = await axios.post(
         "https://api.imagga.com/v2/uploads",
-        { image: imageB64, image_base64: imageB64 },
+        { image_base64: imageB64 },
         {
           headers: {
             "Content-Type": "multipart/form-data",
