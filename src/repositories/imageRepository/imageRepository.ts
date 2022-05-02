@@ -31,7 +31,7 @@ export interface saveImageParams {
   imageBuffer: string;
 }
 
-export interface getImageObjectsParams {
+export interface discoverImageObjectsParams {
   db?: Context;
   imageB64: string;
 }
@@ -43,5 +43,7 @@ export interface imageRepository {
   getIdsByObject: (params: getIdsByObjectParam) => Promise<number[]>;
   addAsync: (params: addAsyncParams) => Promise<Image | null>;
   uploadImageAsync: (params: saveImageParams) => Promise<string | null>;
-  getImageObjects: (params: getImageObjectsParams) => Promise<ImageObjects[]>;
+  discoverImageObjects: (
+    params: discoverImageObjectsParams
+  ) => Promise<ImageObjects[]>;
 }
