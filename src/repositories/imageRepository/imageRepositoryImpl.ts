@@ -175,7 +175,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     image.Objects.forEach((data) => {
       insertObjectsQuery += `INSERT INTO ImageObjects(ImageId, Name, Confidence, CreateDate, IsActive)
                     VALUES (?, ?, ?, now(), true);`;
-      objectParams.push(...[image.Id, data.Name, 15]);
+      objectParams.push(...[image.Id, data.Name, data.Confidence]);
     });
 
     const insertedObjects = await db.queryAsync(
