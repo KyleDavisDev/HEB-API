@@ -116,7 +116,7 @@ const imageHandler = {
       imageObj.Path = path;
       imageObj.Objects = objects;
       imageObj.Metadata = metaData;
-      imageObj.Label = label;
+      imageObj.Label = label ?? "Default Label";
 
       const savedImage: Image | null = await imageRepo.addAsync({
         image: imageObj,
