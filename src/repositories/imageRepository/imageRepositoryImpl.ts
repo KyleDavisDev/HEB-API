@@ -151,7 +151,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
 
     // 1) Start off with saving the image
     const insertImageQuery = `INSERT INTO Images(TypeId, Label, Path, CreateDate, IsActive)
-                   VALUES ((SELECT Id FROM ImageTypes WHERE Value = ? AND IsActive = 1 LIMIT 1), ?, ?, now(), true);`;
+                   VALUES ((SELECT Id FROM ImageTypes WHERE Value = ? AND IsActive = 1 LIMIT 1), ?, ?, UNIX_TIMESTAMP(), true);`;
     const args = [image.Type.Value, image.Label, image.Path];
     const insertedImageRow = await db.queryAsync(insertImageQuery, args);
     if (!insertedImageRow) return null; // get out
@@ -162,7 +162,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     let metaParams: any[] = [];
     image.Metadata.forEach((data) => {
       insertMetaQuery += `INSERT INTO ImageMetadata(ImageId, Name, Value, CreateDate, IsActive)
-                    VALUES (?, ?, ?, now(), true);`;
+                    VALUES (?, ?, ?, UNIX_TIMESTAMP(), true);`;
       metaParams.push(...[image.Id, data.Name, data.Value]);
     });
 
@@ -174,7 +174,7 @@ const imageRepositoryImpl: imageRepositoryImpl = {
     let objectParams: any[] = [];
     image.Objects.forEach((data) => {
       insertObjectsQuery += `INSERT INTO ImageObjects(ImageId, Name, Confidence, CreateDate, IsActive)
-                    VALUES (?, ?, ?, now(), true);`;
+                    VALUES (?, ?, ?, UNIX_TIMESTAMP(), true);`;
       objectParams.push(...[image.Id, data.Name, data.Confidence]);
     });
 
