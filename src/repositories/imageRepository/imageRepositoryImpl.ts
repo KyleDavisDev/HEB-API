@@ -31,7 +31,7 @@ const imageRepositoryImpl: imageRepository = {
                    SELECT Id, ImageId, Name, Confidence, CreateDate, IsActive FROM ImageObjects WHERE ImageId = ? AND IsActive = 1;`;
 
     const results = await db.queryAsync(query, [id, id, id]).catch((x) => x);
-    if (!results) return null;
+    if (!results || results[0].length === 0) return null;
 
     // Piecing it all together!
     const metaData: ImageMetadata[] = [];
