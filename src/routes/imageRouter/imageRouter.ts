@@ -46,7 +46,10 @@ const imageRouter = (imageRepo: imageRepository) => {
    */
   router.post(
     "/",
-    oneOf([body("image").exists().isBase64(), body("image").exists().isURL()]),
+    oneOf([
+      body("image").exists().contains("data:image/").contains(";base64,"),
+      body("image").exists().isURL(),
+    ]),
     body("label").optional().isString().isLength({ max: 150 }),
     imageHandler.saveImage(imageRepo)
   );
