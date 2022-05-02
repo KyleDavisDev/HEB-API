@@ -7,7 +7,6 @@ import { validationResult } from "express-validator";
 import { ImageMetadata, ImageMetadataModel } from "../Models/ImageMetadata";
 import { ImageTypeModel } from "../Models/ImageTypes";
 import { ImageObjects } from "../Models/ImageObjects";
-import clearAllTimers = jest.clearAllTimers;
 
 const imageHandler = {
   getAll: (imageRepo: imageRepository) => {
@@ -72,7 +71,7 @@ const imageHandler = {
       try {
         if (!validationResult(req).isEmpty()) {
           return res.status(301).send({
-            msg: `Invalid JSON format. Image must be a URL or base64 encoded. Label, if provided, must be a string.`,
+            msg: `Invalid JSON format. Image must be a URL or base64 encoded. Label, if provided, must be a string. Note: Base64 images must start with 'data:image/___;base64,'.`,
           });
         }
 
@@ -92,13 +91,12 @@ const imageHandler = {
         }
 
         // 2) Get the objects of the image
-        const objects: ImageObjects[] =
-          await imageRepo.discoverImageObjectsAsync({
-            imageB64,
-          });
+        const objects = await imageRepo.discoverImageObjectsAsync({
+          imageB64,
+        });
         if (objects.length === 0) {
           return res.status(400).send({
-            msg: "Unable to determine the objects inside of the image.",
+            msg: "Unable to determine the objects inside of the image. This may be the result of a service being out offline or a file type of web.",
           });
         }
 
@@ -126,9 +124,8 @@ const imageHandler = {
         });
 
         return res.status(200).send(savedImage);
-      } catch (e) {
-        console.log(e);
-        return res.status(400).send(e);
+      } catch (e: any) {
+        return res.status(400).send({ msg: "Error: " + e.message });
       }
     };
   },
@@ -153,31 +150,36 @@ const imageHandler = {
   },
 
   getImageMetadata: async (imageB64: string): Promise<ImageMetadata[]> => {
-    // Quick sanity check -- sharp package expects param in very specific fashion
-    if (imageB64.includes(";base64,")) {
-      const startIndex = imageB64.indexOf(";base64,") + ";base64,".length;
-      imageB64 = imageB64.substring(startIndex);
-    }
-
-    const imageBuffer: Buffer = Buffer.from(imageB64, "base64");
-
-    const metadata: sharp.Metadata = await sharp(imageBuffer).metadata();
-
-    const imageMetadata: ImageMetadata[] = [];
-    for (const [key, val] of Object.entries(metadata)) {
-      if (
-        typeof val === "number" ||
-        typeof val === "string" ||
-        typeof val === "boolean"
-      ) {
-        const data = { ...ImageMetadataModel };
-        data.Name = key;
-        data.Value = val.toString();
-        imageMetadata.push(data);
+    try {
+      // Quick sanity check -- sharp package expects param in very specific fashion
+      if (imageB64.includes(";base64,")) {
+        const startIndex = imageB64.indexOf(";base64,") + ";base64,".length;
+        imageB64 = imageB64.substring(startIndex);
       }
-    }
 
-    return Promise.resolve(imageMetadata);
+      const imageBuffer: Buffer = Buffer.from(imageB64, "base64");
+      const metadata: sharp.Metadata = await sharp(imageBuffer).metadata();
+
+      const imageMetadata: ImageMetadata[] = [];
+      for (const [key, val] of Object.entries(metadata)) {
+        if (
+          typeof val === "number" ||
+          typeof val === "string" ||
+          typeof val === "boolean"
+        ) {
+          const data = { ...ImageMetadataModel };
+          data.Name = key;
+          data.Value = val.toString();
+          imageMetadata.push(data);
+        }
+      }
+
+      return imageMetadata;
+    } catch (e) {
+      throw new Error(
+        "Only image types of JPEG, PNG, WebP, GIF, AVIF or TIFF are supported."
+      );
+    }
   },
 };
 
