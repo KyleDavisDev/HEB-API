@@ -79,10 +79,10 @@ describe("/images", () => {
   });
 
   describe("@GET /?objects=:objects", () => {
-    it("should return status 301 on invalid values", async () => {
+    it.only("should return status 400 on invalid values", async () => {
       // Given
-      const status = 301;
-      const invalidObject = "12312&object=123";
+      const status = 400;
+      const invalidObject = [{}, "d", 52];
 
       //When
       const result = await request
@@ -93,9 +93,9 @@ describe("/images", () => {
       expect(result.status).toEqual(status);
     });
 
-    it("should return status 301 on if no images contain the category", async () => {
+    it("should return status 404 on if no images contain the category", async () => {
       // Given
-      const status = 301;
+      const status = 404;
       const objectQuery = '"dog"';
       getIdsByObjectAsync = Promise.resolve([]);
 

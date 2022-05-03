@@ -30,7 +30,7 @@ const imageHandler = {
           objects: objects,
         });
         if (ids.length === 0) {
-          return res.status(301).send({
+          return res.status(404).send({
             msg: `.No images found with requested categories of '${objects}'`,
           });
         }
