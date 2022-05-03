@@ -6,13 +6,12 @@ import { imageRepository } from "../repositories/imageRepository/imageRepository
 import { validationResult } from "express-validator";
 import { ImageMetadata, ImageMetadataModel } from "../Models/ImageMetadata";
 import { ImageTypeModel } from "../Models/ImageTypes";
-import { ImageObjects } from "../Models/ImageObjects";
 
 const imageHandler = {
   getAll: (imageRepo: imageRepository) => {
     return async (req: Request, res: Response) => {
       if (!validationResult(req).isEmpty()) {
-        return res.status(301).send({
+        return res.status(400).send({
           msg: `Invalid objects format. Objects must be a string and values separated by a comma. Ex: 'dog' or 'dog,cat'.`,
         });
       }
@@ -50,7 +49,7 @@ const imageHandler = {
     return async (req: Request, res: Response) => {
       if (!validationResult(req).isEmpty()) {
         return res
-          .status(301)
+          .status(400)
           .send({ msg: `Invalid Id format. Id must be a number.` });
       }
 
@@ -59,7 +58,7 @@ const imageHandler = {
 
       const image = await imageRepo.getByIdAsync({ id: imageId });
       if (!image) {
-        return res.status(301).send({ msg: `No image found for id of ${id}` });
+        return res.status(404).send({ msg: `No image found for id of ${id}` });
       }
 
       return res.status(200).send(image);
@@ -70,7 +69,7 @@ const imageHandler = {
     return async (req: Request, res: Response) => {
       try {
         if (!validationResult(req).isEmpty()) {
-          return res.status(301).send({
+          return res.status(400).send({
             msg: `Invalid JSON format. Image must be a URL or base64 encoded. Label, if provided, must be a string. Note: Base64 images must start with 'data:image/___;base64,'.`,
           });
         }
@@ -86,7 +85,7 @@ const imageHandler = {
         const typeOfImage = metaData.find((x) => x.Name === "format")?.Value;
         if (!typeOfImage) {
           return res
-            .status(400)
+            .status(415)
             .send({ msg: "Unable to determine the type of image this is." });
         }
 
@@ -95,7 +94,7 @@ const imageHandler = {
           imageB64,
         });
         if (objects.length === 0) {
-          return res.status(400).send({
+          return res.status(415).send({
             msg: "Unable to determine the objects inside of the image. This may be the result of a service being out offline or a file type of web.",
           });
         }
@@ -105,7 +104,7 @@ const imageHandler = {
           imageBuffer: imageB64,
         });
         if (!path) {
-          return res.status(400).send({ msg: "error saving the image" });
+          return res.status(500).send({ msg: "error saving the image" });
         }
 
         // construct object to save to DB!

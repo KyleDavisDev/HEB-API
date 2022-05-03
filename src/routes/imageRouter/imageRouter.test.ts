@@ -127,7 +127,7 @@ describe("/images", () => {
   });
 
   describe("@GET /:id", () => {
-    it("should return 301 if id is not a positive numeric value", async () => {
+    it("should return status of 400 if id is not a positive numeric value", async () => {
       //Given
       const invalidIds = [
         "a",
@@ -141,7 +141,7 @@ describe("/images", () => {
         3.1415,
         Math.PI,
       ];
-      const status = 301;
+      const status = 400;
 
       for (let i = 0; i < invalidIds.length; i++) {
         const id = invalidIds[i];
@@ -154,9 +154,9 @@ describe("/images", () => {
       }
     });
 
-    it("should return status of 301 on no image found", async () => {
+    it("should return status of 404 on no image found", async () => {
       const id = 5;
-      const status = 301;
+      const status = 404;
 
       //When
       const result = await request.get(`${basePath}/${id}`);
@@ -194,9 +194,9 @@ describe("/images", () => {
   });
 
   describe("@POST /", () => {
-    it("should return status 301 on empty JSON", async () => {
+    it("should return status of 400 on empty JSON", async () => {
       // Given
-      const status = 301;
+      const status = 400;
 
       //When
       const result = await request
@@ -208,9 +208,9 @@ describe("/images", () => {
       expect(result.statusCode).toEqual(status);
     });
 
-    it("should return status 301 on empty missing image param", async () => {
+    it("should return status of 400 on empty missing image param", async () => {
       // Given
-      const status = 301;
+      const status = 400;
       const image = undefined;
       const label = "test value";
 
@@ -224,9 +224,9 @@ describe("/images", () => {
       expect(result.statusCode).toEqual(status);
     });
 
-    it("should return status 301 on invalid image param type", async () => {
+    it("should return status of 301 on invalid image param type", async () => {
       // Given
-      const status = 301;
+      const status = 400;
       const invalidImageTypes = ["a", 123, "abc123", {}];
       const label = "test value";
 
@@ -244,9 +244,9 @@ describe("/images", () => {
       }
     });
 
-    it("should return status 301 on invalid label type", async () => {
+    it("should return status of 400 on invalid label type", async () => {
       // Given
-      const status = 301;
+      const status = 400;
       const image =
         "https://kyledavisdev.com/_next/image?url=%2Fstatic%2Fprofile-pic.jpg&w=256&q=75";
       const invalidLabels = [1, -5, { key: "value" }, "#".repeat(151)];
