@@ -79,7 +79,7 @@ describe("/images", () => {
   });
 
   describe("@GET /?objects=:objects", () => {
-    it.only("should return status 400 on invalid values", async () => {
+    it("should return status 400 on invalid values", async () => {
       // Given
       const status = 400;
       const invalidObject = [{}, "d", 52];
