@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import { imageRouter } from "../routes/imageRouter/imageRouter";
 import { imageRepository } from "../repositories/imageRepository/imageRepository";
 
